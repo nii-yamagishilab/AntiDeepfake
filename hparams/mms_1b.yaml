@@ -1,0 +1,132 @@
+# Base path to perform experiment
+base_path: !PLACEHOLDER
+exp_name: exp 
+# Folder that contains databases
+# this data_folder string will replace "$" in Path of the .csv protocol
+data_folder: !ref <base_path>/Data 
+# Folder that contains downloaded pre-trained checkpoints
+ssl_weight_folder: !ref <base_path>/Log/ssl-weights
+# Folder that contains train/valid/test.csv
+protocol_folder: ./protocols
+# Path to save exp log and checkpoints
+output_folder: !ref <base_path>/Log/exps/exp_mms_1b_<exp_name>
+# where checkpoints will be saved
+save_folder: !ref <output_folder>/save
+# Logging file for every N optimizer steps (many lines)
+train_steps_log: !ref <output_folder>/train_steps_log.txt
+# Logging file per epoch
+train_stage_log: !ref <output_folder>/exp_log.txt
+# Save path for evaluation score
+score_path: !ref <output_folder>/evaluation_score.csv
+# Random seed
+seed: 1234
+
+# Protocol files to read
+train_csv: !ref <protocol_folder>/train.csv
+valid_csv: !ref <protocol_folder>/valid.csv
+test_csv: !ref <protocol_folder>/test.csv
+
+# Whether use RawBoost
+use_da: True 
+# Whether load pre-trained checkpoints ...
+use_pretrained: False
+# If True, load the following checkpoints for further fine-tuning
+pretrained_weights:
+   detector: /path/to/checkpoints/mms_1b.ckpt
+
+# Training and logging
+number_of_epochs: 30
+log_interval: 100 
+precision: fp16 
+max_grad_norm: 100.
+
+# The training will either stops at number_of_epochs or optimizer_step_limit
+# I.e. the first that is reached.
+optimizer_step_limit: 800000
+valid_step: 100000
+
+# Dynamic Batching parameters
+max_batch_length: 100 
+num_buckets: 20 
+shuffle: True # if true re-creates batches at each epoch shuffling examples.
+batch_ordering: random
+
+dynamic_batch_sampler_train:
+   max_batch_length: !ref <max_batch_length>
+   num_buckets: !ref <num_buckets>
+   shuffle: !ref <shuffle>
+   batch_ordering: !ref <batch_ordering>
+
+num_workers: 8 
+valid_dataloader_options:
+   batch_size: 10 
+
+####################### Training Parameters ####################################
+lr: 1e-7 
+warmup: 80000
+
+####################### Model Parameters #######################################
+ssl: !new:models.W2V.Model
+   ssl_orig_output_dim: 1280 
+   ssl_path: !ref <ssl_weight_folder>/base_1b.pt
+
+modules:
+   detector: !ref <ssl>
+
+optimizer: !name:torch.optim.AdamW
+   lr: !ref <lr>
+   weight_decay: 0.01
+   eps: 0.000001
+
+error_stats: !name:speechbrain.utils.metric_stats.BinaryMetricStats
+
+epoch_counter: !new:speechbrain.utils.epoch_loop.EpochCounter
+   limit: !ref <number_of_epochs>
+
+lr_scheduler: !new:speechbrain.nnet.schedulers.WarmAndExpDecayLRSchedule
+   lr: !ref <lr>
+   n_warmup_steps: !ref <warmup>
+   total_steps: !ref <optimizer_step_limit>
+   decay_factor: 0.01
+
+checkpointer: !new:speechbrain.utils.checkpoints.Checkpointer
+   checkpoints_dir: !ref <save_folder>
+   recoverables:
+      ssl: !ref <ssl>
+
+train_steps_logger: !new:speechbrain.utils.train_logger.TensorboardLogger
+   save_dir: !ref <output_folder>/train_steps_log
+
+train_stage_logger: !new:speechbrain.utils.train_logger.FileTrainLogger
+   save_file: !ref <train_stage_log>
+
+####################### RawBoost Parameters ####################################
+rawboost:
+  # Rawboost algorithms: 
+  # 0: No augmentation, 1: LnL_convolutive_noise, 2: ISD_additive_noise,
+  # 3: SSI_additive_noise, 4: 1+2+3, 5: 1+2, 6: 1+3, 7: 2+3, 8: 1+3
+  algo: 5 
+
+  # LnL_convolutive_noise parameters
+  LnL_convolutive_noise:
+    nBands: 5       # Number of notch filters
+    minF: 20        # Minimum centre frequency [Hz] of notch filter
+    maxF: 8000      # Maximum centre frequency [Hz] (<sr/2) of notch filter
+    minBW: 100      # Minimum width [Hz] of filter
+    maxBW: 1000     # Maximum width [Hz] of filter
+    minCoeff: 10    # Minimum filter coefficients
+    maxCoeff: 100   # Maximum filter coefficients
+    minG: 0         # Minimum gain factor of linear component
+    maxG: 0         # Maximum gain factor of linear component
+    minBiasLinNonLin: 5  # Minimum gain difference between linear and non-linear components
+    maxBiasLinNonLin: 20 # Maximum gain difference between linear and non-linear components
+    N_f: 5          # Order of the (non-)linearity where N_f=1 refers only to linear components
+
+  # ISD_additive_noise parameters
+  ISD_additive_noise:
+    P: 10       # Maximum number of uniformly distributed samples in [%]
+    g_sd: 2     # Gain parameters > 0
+
+  # SSI_additive_noise parameters
+  SSI_additive_noise:
+    SNRmin: 10  # Minimum SNR value for coloured additive noise
