@@ -31,7 +31,7 @@ This table below summarizes performance across multiple evaluation datasets, alo
 For more technical details and analysis, please refer to our paper [Post-training for Deepfake Speech Detectio](paper-link).
 
 | 🤗 Model                                                                                 | Params | RawBoost | ADD2023 | DEEP-VOICE | FakeOrReal | FakeOrReal-Norm | In-the-Wild | Deepfake-Eval-2024 |
-|------------------------------------------------------------------------------------------|--------|----|---------|-----------|------------|--------------|----------|
+|------------------------------------------------------------------------------------------|--------|----|---------|-----------|------------|--------------|----------|----------|
 | [HuBERT-XL-NDA](https://huggingface.co/nii-yamagishilab/hubert-xlarge-anti-deepfake-nda) | 964M   | ✗  | 35.34   | 14.87     | 3.67       | 15.52        | 17.99    | 47.72    |
 | [W2V-Small-NDA](https://huggingface.co/nii-yamagishilab/wav2vec-small-anti-deepfake-nda) | 95M    | ✗  | 19.41   | 16.22     | 1.05       | 6.47         | 4.65     | 31.97    |
 | [W2V-Large-NDA](https://huggingface.co/nii-yamagishilab/wav2vec-large-anti-deepfake-nda) | 317M   | ✗  | 12.67   | 5.01      | 0.80       | 1.44         | 2.25     | 30.05    |
@@ -206,7 +206,7 @@ We provide our .ckpt checkpoints on [Zenodo](https://zenodo.org/), to continue f
 
 Fine-tuning will follow a similar process to training a new model, except that SSL weights will be initialized as AntiDeepfake checkpoints.
 
-Below is our evaluation performance of fine-tuning AntiDeepfake models on Deepfake-Eval-2024 train set (PT = Pre-training, PST = Post-training, FT = Fine-tuning).
+Below is our evaluation performance of fine-tuning AntiDeepfake models on Deepfake-Eval-2024 train set (PT = Pre-training, PST = Post-training, FT = Fine-tuning, 4s = Input Duration is 4 seconds).
 
 | Model ID     | PT+PST+FT 4s | PT+PST+FT 10s | PT+PST+FT 13s | PT+PST+FT 30s | PT+PST+FT 50s | PT+FT 4s | PT+FT 10s | PT+FT 13s | PT+FT 30s | PT+FT 50s |
 |--------------|--------------|---------------|---------------|---------------|---------------|----------|-----------|-----------|-----------|-----------|
