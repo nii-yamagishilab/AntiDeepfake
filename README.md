@@ -43,7 +43,7 @@ For more technical details and analysis, please refer to our paper [Post-trainin
 | [W2V-Small](https://huggingface.co/nii-yamagishilab/wav2vec-small-anti-deepfake) | 95M    | ✓  | 13.02   | 9.80      | 21.94      | 17.85        | 4.24     | 33.33    |
 | [W2V-Large](https://huggingface.co/nii-yamagishilab/wav2vec-large-anti-deepfake) | 317M   | ✓  | 13.25   | 4.53      | 0.63       | 0.97         | 1.91     | 33.38    |
 | [MMS-300M](https://huggingface.co/nii-yamagishilab/mms-300m-anti-deepfake)       | 317M   | ✓  | 7.93    | 2.27      | 1.35       | 5.92         | 2.90     | 32.80    |
-| [MMS-1B](https://huggingface.co/nii-yamagishilab/mms-1b-anti-deepfake)           | 965M   | ✓  | 9.06    | 2.56      | 1.22       | 1.73         | 1.82     | 23.70    |
+| [MMS-1B](https://huggingface.co/nii-yamagishilab/mms-1b-anti-deepfake)           | 965M   | ✓  | 9.06    | 2.56      | 1.22       | 1.73         | 1.82     | 27.70    |
 | [XLS-R-1B](https://huggingface.co/nii-yamagishilab/xls-r-1b-anti-deepfake)       | 965M   | ✓  | 5.39    | 2.52      | 5.74       | 12.14        | 1.35     | 26.76    |
 | [XLS-R-2B](https://huggingface.co/nii-yamagishilab/xls-r-2b-anti-deepfake)       | 2.2B   | ✓  | 4.67    | 2.30      | 2.62       | 1.65         | 1.23     | 27.77    |
 
