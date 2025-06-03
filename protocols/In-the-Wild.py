@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """script to create protocol for In-the-wild database
-In-the-Wild.txt (.csv)/
+meta.csv:
 file,speaker,label
 0.wav,Alec Guinness,spoof
 1.wav,Alec Guinness,spoof
