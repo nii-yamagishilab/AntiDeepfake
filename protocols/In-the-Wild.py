@@ -8,7 +8,7 @@ file,speaker,label
 path/to/your/In-the-Wild/release_in_the_wild/
 ├── xx.wav
 ├── . . . 
-├── meta.csv (the protocol .txt(.csv) used in this script)
+├── meta.csv (the protocol used in this script)
 
 In-the-Wild.csv:
 """
@@ -19,9 +19,10 @@ import csv
 
 try:
     import pandas as pd
+    from pandarallel import pandarallel
     import torchaudio
 except ImportError:
-    print("Please install pandas and torchaudio")
+    print("Please install pandas, pandarallel and torchaudio")
     sys.exit(1)
 
 
@@ -29,13 +30,15 @@ __author__ = "Wanying Ge, Xin Wang"
 __email__ = "gewanying@nii.ac.jp, wangxin@nii.ac.jp"
 __copyright__ = "Copyright 2025, NII Yamagishi Lab"
 
+# used for pandas pd.parallel_apply() to speed up
+pandarallel.initialize()
+
 # Define paths 
 root_folder = '/path/to/your/'
 dataset_name = "In-the-Wild"
 ID_PREFIX = "ItW-"
-# data_folder should be /path/to/your/In-the-Wild
 data_folder = os.path.join(root_folder, dataset_name, 'release_in_the_wild')
-protocol_file = dataset_name + ".txt"
+protocol_file = os.path.join(data_folder, 'meta.csv')
 output_csv = dataset_name + ".csv"
 
 # Function to read the protocol file and collect metadata
@@ -53,7 +56,7 @@ def read_protocol(protocol_file):
         sep =',', 
         header=0,
         converters = {'file': converter_name, 'label': converter_label})
-
+    
     # rename the columns to ID, Label, Speaker
     metadata = metadata.rename(
         columns = {'file': "ID", 'label': 'Label', 'speaker': 'Speaker'})
@@ -97,10 +100,8 @@ def collect_audio_metadata(metadata, data_folder):
             encoding = metainfo.encoding
             # bit per sample
             bitpersample = metainfo.bits_per_sample
-            
             if num_channels > 1:
                 print(f"Warning: File {file_path} has multiple channels.")
-
         else:
             # If the file doesn't exist, skip the entry
             print(f"Warning: File {file_path} does not exist, skipping entry.")
@@ -110,18 +111,17 @@ def collect_audio_metadata(metadata, data_folder):
             encoding = ''
             bitpersample = -1
             num_channels = -1
-
         row['ID'] = fileid
         row['Duration'] = duration
         row['SampleRate'] = sample_rate
         row['Path'] = filepath
         row['AudioChannel'] = num_channels
         row['AudioEncoding'] = encoding
-        row['AudioBitPerSample'] = bitpersample
+        row['AudioBitSample'] = bitpersample
         row['Language'] = 'EN'
         return row
 
-    metadata = metadata.progress_apply(lambda x: __get_audio_meta(x), axis=1)
+    metadata = metadata.parallel_apply(lambda x: __get_audio_meta(x), axis=1)
     return metadata
 
 # Write metadata to CSV
