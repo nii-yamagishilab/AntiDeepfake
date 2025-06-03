@@ -39,7 +39,7 @@ root_folder = '/path/to/your/'
 dataset_name = 'MLS'
 data_folder = os.path.join(root_folder, dataset_name)
 ID_PREFIX = 'MLS-'
-output_csv = dataset_name + '_en.csv'
+output_csv = dataset_name + '.csv'
 
 # Function to collect metadata from the directory structure
 def collect_metadata(data_folder):
