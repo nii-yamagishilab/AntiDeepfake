@@ -32,6 +32,9 @@ __author__ = "Wanying Ge, Xin Wang"
 __email__ = "gewanying@nii.ac.jp, wangxin@nii.ac.jp"
 __copyright__ = "Copyright 2025, National Institute of Informatics"
 
+# used for pandas pd.parallel_apply() to speed up
+pandarallel.initialize()
+
 # Define paths
 root_folder = '/path/to/your/'
 dataset_name = 'ADD2023'
@@ -82,6 +85,7 @@ def collect_audio_metadata(metadata, root_folder):
             num_channels = -1
         row["ID"] = ID_PREFIX + row["ID"]
         row["Attack"] = '-'
+        row["Speaker"] = '-'
         row['Label'] = label
         row["Duration"] = duration
         row["SampleRate"] = sample_rate
