@@ -98,7 +98,7 @@ def collect_metadata(data_folder):
     return metadata
 
 # Write metadata to CSV
-def write_csv(metadata, output_path):
+def write_csv(metadata):
     header = ["ID", "Label", "Duration", "SampleRate", "Path", "Attack", "Speaker",\
               "Proportion", "AudioChannel", "AudioEncoding", "AudioBitSample",\
               "Language"]
