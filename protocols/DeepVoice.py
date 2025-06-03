@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """script to create protocol for DeepVoice database
-Audio segments have to be generated locally
+Audio segments have to be generated locally using DeepVoice_segmentation.py
 We do not use original long audio for testing
 
 /path/to/your/DeepVoice/AUDIO_SEGMENTS/
@@ -29,9 +29,6 @@ except ImportError:
 __author__ = "Wanying Ge, Xin Wang"
 __email__ = "gewanying@nii.ac.jp, wangxin@nii.ac.jp"
 __copyright__ = "Copyright 2025, National Institute of Informatics"
-
-# used for pandas pd.parallel_apply() to speed up
-pandarallel.initialize()
 
 # Define paths
 root_folder = '/path/to/your/'
