@@ -28,9 +28,10 @@ import csv
 
 try:
     import pandas as pd
+    from pandarallel import pandarallel
     import torchaudio
 except ImportError:
-    print("Please install pandas and torchaudio")
+    print("Please install pandas, pandarallel and torchaudio")
     sys.exit(1)
 
 
