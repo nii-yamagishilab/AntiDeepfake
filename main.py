@@ -7,9 +7,11 @@ import time
 import random
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 from tqdm.contrib import tqdm
 from hyperpyyaml import load_hyperpyyaml
+
 import torch
 import torchaudio
 from torch.nn.parallel import DistributedDataParallel
@@ -29,8 +31,6 @@ from utils import load_weights, set_random_seed, compute_eer, process_Rawboost_f
 __author__ = "Wanying Ge, Xin Wang"
 __email__ = "gewanying@nii.ac.jp, wangxin@nii.ac.jp"
 __copyright__ = "Copyright 2025, National Institute of Informatics"
-
-logger = get_logger(__name__)
 
 class SSLBrain(sb.core.Brain):
     def __init__(self, *args, **kargs):

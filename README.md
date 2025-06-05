@@ -161,6 +161,7 @@ Example bash command to train the MMS-300M model:
 
 ```
 python main.py hparams/mms_300m.yaml \
+    --base_path /your/base_path \
     --exp_name my_job \
     --lr 1e-6 \
     --use_da True      # Enable RawBoost data augmentation
