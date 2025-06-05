@@ -168,7 +168,7 @@ python main.py hparams/mms_300m.yaml \
 Training logs and checkpoints will be saved under `/base_path/Log/exps/exp_mms_300m_my_job`.  
 Evaluation results with the best validation model will be stored in the same folder with the name `evaluation_score.csv`.
 
-You can use the following script for multi-GPU training
+You can use the following script for multi-GPU training:
 ```
 torchrun --nnodes=1 --nproc-per-node=NUM_GPU main.py hparams/<MODEL>.yaml
 ```
@@ -230,14 +230,11 @@ This study was carried out using the TSUBAME4.0 supercomputer at Institute of Sc
 
 Codes are based on the implementations of [wav2vec 2.0 pretraining with SpeechBrain](https://github.com/speechbrain/speechbrain/tree/develop/recipes/LibriSpeech/self-supervised-learning/wav2vec2) and [project-NN-Pytorch-scripts](https://github.com/nii-yamagishilab/project-NN-Pytorch-scripts).
 ## **Citation**
+If you find this repository useful, please consider citing:
 ```
-@misc{paper,
+@misc{antideepfake_2025,
       title={Post-training for Deepfake Speech Detection}, 
       author={Wanying Ge, Xin Wang, Xuechen Liu, Junichi Yamagishi},
       year={2025},
-      eprint={},
-      archivePrefix={arXiv},
-      primaryClass={},
-      url={}, 
 }
 ```
