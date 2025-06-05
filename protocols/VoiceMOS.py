@@ -2,12 +2,21 @@
 """script to create protocol for VoiceMOS database
 No additional protocol used, we simply walk through the directory,
 
+We use this in our training:
 /path/to/your/VoiceMOS/
 ├── main/
 │   ├── DATA/
 │   │   ├── wav/
 │   │   │   ├── xx.wav
 │   │   │   ├── . . .
+The following code will process the original blizzard challenge data,
+which contains real and fake audio
+/path/to/your/VoiceMOS/
+├── main/
+│   ├── blizzard_wavs_and_scores_2008_release_version_1/
+│   │   ├── A/
+│   │   │   ├── /x/x/x/x/xx.wav
+│   │   ├── . . .
 
 VoiceMOS.csv:
 """

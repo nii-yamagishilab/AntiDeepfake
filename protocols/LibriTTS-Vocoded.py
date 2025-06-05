@@ -3,6 +3,9 @@
 No additional protocol used, we simply walk through the directory,
 no real audios in this database
 
+To generate vocoded data, please follow:
+https://colab.research.google.com/drive/1xObWejhqcdSxFAjfWI7sudwPPMoCx-vA?usp=sharing#scrollTo=aNbf2u5odiFv
+
 /path/to/your/LibriTTS-Vocoded
 ├── hifigan/
 │   ├── dev-clean/

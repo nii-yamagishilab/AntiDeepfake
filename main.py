@@ -360,7 +360,7 @@ class SSLBrain(sb.core.Brain):
             )
 
     def evaluate(self, dataset, min_key, loader_kwargs={}):
-        """Called for final evaluation and saving score .txt file
+        """Called for final evaluation and saving score .csv file
         """
         loader_kwargs["ckpt_prefix"] = None
         dataset = self.make_dataloader(

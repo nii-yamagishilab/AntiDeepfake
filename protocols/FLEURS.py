@@ -151,13 +151,11 @@ output_csv = dataset_name + '.csv'
 def collect_metadata(data_folder):
     metadata = []
     # Walk through the directory
-    print(data_folder)
     for root, _, files in os.walk(data_folder):
         for file in files:
             if file.endswith(('.wav', '.mp3', '.flac')):
                 # File path and ID
                 file_path = os.path.join(root, file)
-                print(file_path)
                 relative_path = file_path.replace(root_folder, "$ROOT/")
                 # Extract relevant folder names
                 parts = os.path.normpath(relative_path).split(os.sep)

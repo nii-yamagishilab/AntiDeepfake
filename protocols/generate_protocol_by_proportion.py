@@ -52,8 +52,12 @@ def generate_datasets_with_valid_split(train_files, test_files, output_folder=".
                 combined_valid = pd.concat([combined_valid, valid_df], ignore_index=True)
             else:
                 combined_df = pd.concat([combined_df, df], ignore_index=True)
-
-        return combined_df, combined_valid if valid_split else combined_df
+        if valid_split:
+        # When need to split the dataset to train and validation
+            return combined_df, combined_valid
+        else:
+        # When use the whole dataset
+            return combined_df
     
     def calculate_duration(df):
         """
@@ -124,7 +128,10 @@ train_files = [
 ]
 
 test_files = [
+    "ADD2023.csv",
+    "DeepVoice.csv",
     "FakeOrReal.csv",
+    "FakeOrReal_norm.csv",
     "In-the-Wild.csv",
 ]
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""script to create protocol for FLEURS database
+"""script to create protocol for FLEURS-R database
 No additional protocol used, we simply walk through the directory,
 no real audios in this database
 

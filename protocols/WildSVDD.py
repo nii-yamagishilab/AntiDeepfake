@@ -2,14 +2,21 @@
 """script to create protocol for Wild Singing Voice Deepfake Detection (WildSVDD) 
 challenge
 
-/path/to/your/WildSVDD_Data_Sep2024_Processed/
-├── train (not used)
+/path/to/your/WildSVDD/WildSVDD_Data_Sep2024_Processed/
+├── train/
+│   ├── mixture/
+│   │   ├── bonafide_<NAME>_<Segment_ID>.flac
+│   │   ├── deepfake_<NAME>_<Segment_ID>.flac
+│   │   ├── . . . 
+│   ├── vocals/
+│   │   ├── . . . 
 ├── test_A/
 │   ├── mixture/
 │   │   ├── bonafide_<NAME>_<Segment_ID>.flac
 │   │   ├── deepfake_<NAME>_<Segment_ID>.flac
 │   │   ├── . . .
 │   ├── vocals/
+│   │   ├── . . . 
 ├── test_B/
 │   ├── mixture/
 │   │   ├── . . .

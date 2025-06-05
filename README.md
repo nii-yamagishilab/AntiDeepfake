@@ -28,7 +28,7 @@ The AntiDeepfake project provides a series of powerful foundation models post-tr
 
 This table below summarizes performance across multiple evaluation datasets, along with their sizes, to help guide your selection.
 
-For more technical details and analysis, please refer to our paper [Post-training for Deepfake Speech Detectio](paper-link).
+For more technical details and analysis, please refer to our paper [Post-training for Deepfake Speech Detection](paper-link).
 
 | 🤗 Model                                                                                 | Params | RawBoost | ADD2023 | DEEP-VOICE | FakeOrReal | FakeOrReal-Norm | In-the-Wild | Deepfake-Eval-2024 |
 |------------------------------------------------------------------------------------------|--------|----|---------|-----------|------------|--------------|----------|----------|
@@ -120,7 +120,7 @@ Below is an overview of our working directory structure. This is provided as a r
 │
 ├── speechbrain/            # Directory for speechbrain installation
 │
-├── AntiDeepfake/       # This repository
+├── AntiDeepfake/           # This repository
 │   ├── ...                 # Project files
 │   ├── protocols/
 │   │   ├── xx.py           # python script for generating protocols
@@ -145,17 +145,15 @@ Please note that this step is not for downloading our AntiDeepfake checkpoints.
 
 ### 2. Generate protocols
 
-Protocol generation scripts are provided in `protocols/`. Each script is named after the database it processes.
+Training and inference scripts provided in this repository are designed to load audio files listed in train/valid/test CSV protocol files. Python scripts for generation these protocols are provided in `protocols/`. Each script is named after the database it processes. 
 
-For large databases such as SpoofCeleb and MLS, protocol generation may take several hours to days.
-
-To merge multiple protocols, you can refer to `generate_protocol_by_proportion.py`.
+To merge multiple CSV protocols, you can refer to `generate_protocol_by_proportion.py`.
 
 To generate protocols for your own data:
 
-- Refer to `ASVspoof2019-LA.py` if you have a protocol file with ground truth labels for each audio file.
-- Refer to `CVoiceFake.py` if your real and fake audios are stored separately.
-- Refer to `WildSVDD.py` if your audio filenames indicate whether they are real or fake.
+- refer to `ASVspoof2019-LA.py` if you have a protocol file with ground truth labels for each audio file.
+- refer to `CVoiceFake.py` if your real and fake audios are stored separately.
+- refer to `WildSVDD.py` if your audio filenames indicate whether they are real or fake.
 
 ### 3. Train
 
@@ -201,8 +199,8 @@ You can use `test.py` for standalone score generation with any model checkpoint,
 ### 5. Further fine-tuning
 
 We provide our .ckpt checkpoints on [Zenodo](https://zenodo.org/), to continue fine-tuning with these checkpoints, please use the same training script from Step 3 and:
-  - Set `use_pretrained=True`
-  - Set `pretrained_weights.detector` to the path of the .ckpt file
+  - add `--use_pretrained True`
+  - add `--pretrained_weights '{"detector": "/path/to/your/downloaded/antideepfake/mms_300m.ckpt"}'`
 
 Fine-tuning will follow a similar process to training a new model, except that SSL weights will be initialized as AntiDeepfake checkpoints.
 
@@ -234,7 +232,7 @@ Codes are based on the implementations of [wav2vec 2.0 pretraining with SpeechBr
 ## **Citation**
 ```
 @misc{paper,
-      title={TITLE}, 
+      title={Post-training for Deepfake Speech Detection}, 
       author={Wanying Ge, Xin Wang, Xuechen Liu, Junichi Yamagishi},
       year={2025},
       eprint={},

@@ -3,6 +3,9 @@
 No additional protocol used, we simply walk through the directory,
 all files are treated as fake
 
+To generate vocoded data, please follow:
+https://colab.research.google.com/drive/1xObWejhqcdSxFAjfWI7sudwPPMoCx-vA?usp=sharing#scrollTo=aNbf2u5odiFv
+
 /path/to/your/VoxCeleb2-Vocoded/
 ├── hifigan/
 |   ├── dev/aac/

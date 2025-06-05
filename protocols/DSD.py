@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 """script to create protocol for DSD corpus
-We need to load the official protocol to get the ground-truth label
+We need to download the official protocol to get the ground-truth label, link:
+https://zenodo.org/records/13788455
 
 DSD_corpus_v1.csv:
 Utterence name (file name),TTS or VC,Is multi-speaker?,Language,Noise type 1,Source link,utt,group,Speaker name,Gender,Age,label,Model,subset,duration
