@@ -6,7 +6,6 @@ Usage:
     python test.py
 
 Before running the script, please follow the steps below to modify the code accordingly:
-(<base_path> is your working directory defined in each .yaml configuration file)
 
 Step [1]: Specify the actual path to your own checkpoint.
     - This should be the path to the `.ckpt` file saved when you ran `main.py`.
@@ -18,7 +17,10 @@ Step [1]: Specify the actual path to your own checkpoint.
         <base_path>/Log/ssl-weights/base_1b.pt
 
     Additionally, set the output feature dimension for the SSL front-end.
-    - For MMS-1B, this value should be 1280.
+    - set ssl_orig_output_dim to 768 for w2v_small
+    - 1024 for w2v_large, mms_300m
+    - 1280 for mms_1b, xlsr_1b, hubert_xl
+    - 1920 for xlsr_2b 
 
 Step [2]: Provide the path to your test dataset and its corresponding protocol file.
     - You can refer to any .py files in ./protocols to generate corresponding protocols for your data
@@ -56,7 +58,11 @@ ssl_orig_output_dim = 1280
 ckpt_path = "/path/to/your/own/checkpoint/ssl.ckpt"
 ssl_path = "/path/to/fairseq/model/checkpoint/base_1b.pt"
 
-# Step[2]: Define paths
+# Step[2]: Define paths for loading audio files
+# Your database_protocol.csv should have a [Path] column, which reads like:
+# $ROOT/SOME_DATASET/TEST/IT/PIZZA/QUATTRO/STAGIONI.wav
+# in this case, modify root_path so that each audio is loaded by its absolute path:
+# /path/to/your/SOME_DATASET/TEST/IT/PIZZA/QUATTRO/STAGIONI.wav
 root_path = '/path/to/your/'
 protocol = '/path/to/your/evaluation/protocol/database_protocol.csv'
 protocol_df = pd.read_csv(protocol)
@@ -68,6 +74,7 @@ state_dict = torch.load(ckpt_path, weights_only=True)
 ssl.load_state_dict(state_dict)
 ssl.cuda().eval()
 
+# Score generation 
 with torch.no_grad():
     id_list = []
     score_list = []

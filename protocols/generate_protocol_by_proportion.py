@@ -14,7 +14,7 @@ import pandas as pd
 
 __author__ = "Wanying Ge, Xin Wang"
 __email__ = "gewanying@nii.ac.jp, wangxin@nii.ac.jp"
-__copyright__ = "Copyright 2025, NII Yamagishi Lab"
+__copyright__ = "Copyright 2025, National Institute of Informatics"
 
 def check_and_remove_duplicates(file_path, target_column='ID'):
     # Read the CSV file
@@ -96,16 +96,16 @@ def generate_datasets_with_valid_split(train_files, test_files, output_folder=".
         print("No data to save for test set.")
 
 train_files = [
-    "AIShell3.csv",            
-    "ASVspoof2019-LA.csv",     
+    "AIShell3.csv",
+    "ASVspoof2019-LA.csv",
     "ASVspoof2021-LA.csv",
     "ASVspoof2021-DF.csv",
     "ASVspoof5.csv",
     "CFAD.csv",
-    "CNCeleb2.csv",            
+    "CNCeleb2.csv",
     "Codecfake.csv",
     "CodecFake.csv",
-    "CVoiceFake_Large.csv",    
+    "CVoiceFake_Large.csv",
     "DECRO.csv",
     "DFADD.csv",
     "DiffusionDeepfake.csv",   
@@ -116,11 +116,11 @@ train_files = [
     "HABLA.csv",
     "LibriTTS.csv",
     "LibriTTS-R.csv",
-    "LibriTTS-Vocoded.csv",    
-    "LJSpeech.csv",     
+    "LibriTTS-Vocoded.csv",
+    "LJSpeech.csv",
     "MLAAD_v5.csv",
     "MLS.csv",
-    "SpoofCeleb.csv",          
+    "SpoofCeleb.csv",
     "VoiceMOS.csv",
     "VoxCeleb2.csv",
     "VoxCeleb2-Vocoded.csv",

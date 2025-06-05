@@ -3,6 +3,11 @@ import random
 import torchaudio
 from pathlib import Path
 
+
+__author__ = "Wanying Ge"
+__email__ = "gewanying@nii.ac.jp"
+__copyright__ = "Copyright 2025, National Institute of Informatics"
+
 # Configuration
 input_dir = "~/Wav/DeepVoice/AUDIO"
 output_dir = "~/Wav/DeepVoice/AUDIO_SEGMENTS"
@@ -61,10 +66,8 @@ def process_directory(input_dir, output_dir):
             if file.endswith(".wav"):
                 input_path = os.path.join(root, file)
                 output_path = create_output_path(root, output_dir)
-
                 # Ensure the output directory exists
                 os.makedirs(output_path, exist_ok=True)
-
                 # Split audio and save segments
                 split_audio(input_path, output_path)
 

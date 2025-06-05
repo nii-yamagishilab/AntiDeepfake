@@ -145,7 +145,7 @@ Please note that this step is not for downloading our AntiDeepfake checkpoints.
 
 ### 2. Generate protocols
 
-Training and inference scripts provided in this repository are designed to load audio files listed in train/valid/test CSV protocol files. Python scripts for generation these protocols are provided in `protocols/`. Each script is named after the database it processes. 
+Training and inference scripts provided in this repository are designed to load audio files listed in train/valid/test CSV protocol files. Python scripts for generating these protocols are provided in `protocols/`. Each script is named after the database it processes. 
 
 To merge multiple CSV protocols, you can refer to `generate_protocol_by_proportion.py`.
 

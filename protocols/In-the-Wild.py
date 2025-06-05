@@ -28,7 +28,7 @@ except ImportError:
 
 __author__ = "Wanying Ge, Xin Wang"
 __email__ = "gewanying@nii.ac.jp, wangxin@nii.ac.jp"
-__copyright__ = "Copyright 2025, NII Yamagishi Lab"
+__copyright__ = "Copyright 2025, National Institute of Informatics"
 
 # used for pandas pd.parallel_apply() to speed up
 pandarallel.initialize()
