@@ -19,7 +19,7 @@ SSB13650058.wav real 0
 F01_SSB13650058.wav fake 1 
 F02_SSB13650058.wav fake 2 
 
-CNCodecFake.csv:
+Codecfake.csv:
 """
 
 import os
