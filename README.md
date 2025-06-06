@@ -157,7 +157,7 @@ To generate protocols for your own data:
 
 ### 3. Train
 
-Example bash command to train the MMS-300M model:
+Example to train the MMS-300M model:
 
 ```
 python main.py hparams/mms_300m.yaml \

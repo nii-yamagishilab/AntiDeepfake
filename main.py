@@ -18,19 +18,19 @@ from torch.nn.parallel import DistributedDataParallel
 from torch.utils.data import DataLoader
 
 import speechbrain as sb
-from speechbrain import Stage
-from speechbrain.core import AMPConfig
+from speechbrain.utils.logger import get_logger
 from speechbrain.dataio.dataloader import LoopedLoader
 from speechbrain.dataio.batch import PaddedBatch
 from speechbrain.dataio.sampler import DynamicBatchSampler
-from speechbrain.utils.distributed import run_on_main
-from speechbrain.utils.logger import get_logger
 
 from utils import load_weights, set_random_seed, compute_eer, process_Rawboost_feature
+
 
 __author__ = "Wanying Ge, Xin Wang"
 __email__ = "gewanying@nii.ac.jp, wangxin@nii.ac.jp"
 __copyright__ = "Copyright 2025, National Institute of Informatics"
+
+logger = get_logger(__name__)
 
 class SSLBrain(sb.core.Brain):
     def __init__(self, *args, **kargs):
@@ -250,9 +250,9 @@ class SSLBrain(sb.core.Brain):
         
         # Managing automatic mixed precision
         with self.no_sync(not should_step):
-            preds = self.compute_forward(batch, Stage.TRAIN)
+            preds = self.compute_forward(batch, sb.Stage.TRAIN)
             objectives = self.compute_objectives(
-                preds, batch, Stage.TRAIN
+                preds, batch, sb.Stage.TRAIN
             )
             
             self.scaler.scale(
@@ -371,20 +371,21 @@ class SSLBrain(sb.core.Brain):
 
         self.modules.eval()
 
-        score_preds = sb.utils.metric_stats.ClassificationStats()
+        # Initialize a metric for storing IDs with corresponding label & score
+        score_preds = sb.utils.metric_stats.BinaryMetricStats()
 
         with torch.no_grad():
             for batch in dataset:
                 preds = self.compute_forward(batch, stage=sb.Stage.TEST)
                 score_preds.append(
                     ids=batch["id"],
-                    predictions=preds,
-                    targets=batch["logit"],
-                )
+                    scores=preds,
+                    labels=batch["logit"],
+                    )
             score_data = {
                 "ID": score_preds.ids,
-                "Score": [score.tolist() for score in score_preds.predictions],
-                "Label": [label.item() for label in score_preds.targets],
+                "Score": [score.tolist() for score in score_preds.scores],
+                "Label": [label.item() for label in score_preds.labels],
             }
             df_score = pd.DataFrame(score_data)
             # Write the final score

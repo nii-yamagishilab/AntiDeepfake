@@ -40,7 +40,7 @@ __copyright__ = "Copyright 2025, National Institute of Informatics"
 root_folder = '/path/to/your/'
 dataset_name = 'MLAAD_v5'
 data_folder = os.path.join(root_folder, dataset_name, 'fake')
-ID_PREFIX = 'MLADD-'
+ID_PREFIX = 'MLAAD-'
 output_csv = dataset_name + '.csv'
 
 # Function to collect metadata from the directory structure

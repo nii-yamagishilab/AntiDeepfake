@@ -53,7 +53,6 @@ def set_random_seed(seed):
     torch.backends.cudnn.deterministic = True 
     torch.backends.cudnn.benchmark = False
 
-# def compute_eer(target_scores, nontarget_scores):
 def compute_eer(label_list, score_list):
     label_list = np.array(label_list)
     score_list = np.array(score_list)
