@@ -60,7 +60,7 @@ For more technical details and analysis, please refer to our paper [Post-trainin
 
 ## Try it out
 
-Inference code is available on each model’s [Hugging Face](https://huggingface.co/nii-yamagishilab) page. 
+Full inference script is available on each model’s [Hugging Face](https://huggingface.co/nii-yamagishilab) page. Simply copy some audio files and run the script to get their detection scores. 
 
 ## Installation
 This setup is recommended if you plan to run custom experiments with the code.
@@ -147,7 +147,7 @@ Please note that this step is not for downloading our AntiDeepfake checkpoints.
 
 Training and inference scripts provided in this repository are designed to load audio files listed in train/valid/test CSV protocol files. Python scripts for generating these protocols are provided in `protocols/`. Each script is named after the database it processes. 
 
-To merge multiple CSV protocols, you can refer to `generate_protocol_by_proportion.py`.
+All protocols are designed to follow the same format so we can easily shuffle, split, or merge them. To merge multiple CSV protocols as in our experiment, you can refer to `generate_protocol_by_proportion.py`.
 
 To generate protocols for your own data:
 
@@ -157,7 +157,7 @@ To generate protocols for your own data:
 
 ### 3. Train
 
-Example to train the MMS-300M model:
+To train the MMS-300M model:
 
 ```
 python main.py hparams/mms_300m.yaml \
@@ -166,10 +166,9 @@ python main.py hparams/mms_300m.yaml \
     --lr 1e-6 \
     --use_da True      # Enable RawBoost data augmentation
 ```
-Training logs and checkpoints will be saved under `/base_path/Log/exps/exp_mms_300m_my_job`.  
-Evaluation results with the best validation model will be stored in the same folder with the name `evaluation_score.csv`.
+Configuration YAML files are named after the model they correspond to. Training logs and checkpoints will be saved under `/base_path/Log/exps/exp_mms_300m_my_job`. If this exp folder already exists, the script will try to resume training from the last saved checkpoint. Evaluation results with the best validation model will be stored in the same folder with name `evaluation_score.csv`.
 
-You can use the following script for multi-GPU training:
+For multi-GPU training, please use:
 ```
 torchrun --nnodes=1 --nproc-per-node=NUM_GPU main.py hparams/<MODEL>.yaml
 ```
@@ -191,15 +190,15 @@ all       0.951    0.8879     0.9421  0.8823  0.9112  0.1016  0.1177  0.1079    
 ```
 Results are shown for each subset and also the full set listed in your protocol.
 
-The message "No data for ID_PREFIX\_1" means no entry IDs in your protocol start with `ID_PREFIX_1`. Each ID should begin with a dataset-specific `ID_PREFIX`, set during its protocol generation.
+The message "No data for ID_PREFIX\_1" means no audio IDs in your protocol start with `ID_PREFIX_1`. Each ID should begin with a dataset-specific `ID_PREFIX`, set during its protocol generation. Audio files with same `ID_PREFIX` are treated as one subset.
 
-#### Evaluate from a checkpoint
+#### Generate CSV score
 You can use `test.py` for standalone score generation with any model checkpoint, or to evaluate on data not included in your test protocol. Please refer to its docstring for detailed usage instructions.
 
 
 ### 5. Further fine-tuning
 
-We provide our .ckpt checkpoints on [Zenodo](https://zenodo.org/), to continue fine-tuning with these checkpoints, please use the same training script from Step 3 and:
+We provide our AntiDeepfake .ckpt checkpoints on [Zenodo](https://zenodo.org/) as well as in .safetensors format on [Hugging Face](https://huggingface.co/nii-yamagishilab). To continue fine-tuning with these checkpoints, please use the same training script from Step 3 and:
   - add `--use_pretrained True`
   - add `--pretrained_weights '{"detector": "/path/to/your/downloaded/antideepfake/mms_300m.ckpt"}'`
 

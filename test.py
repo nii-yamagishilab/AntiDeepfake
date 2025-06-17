@@ -59,16 +59,13 @@ ckpt_path = "/path/to/your/own/checkpoint/ssl.ckpt"
 ssl_path = "/path/to/fairseq/model/checkpoint/base_1b.pt"
 
 # Step[2]: Define paths for loading audio files
-# Your database_protocol.csv should have a [Path] column, which reads like:
-# $ROOT/SOME_DATASET/TEST/IT/PIZZA/QUATTRO/STAGIONI.wav
-# in this case, modify root_path so that each audio is loaded by its absolute path:
-# /path/to/your/SOME_DATASET/TEST/IT/PIZZA/QUATTRO/STAGIONI.wav
+# replace "$ROOT/" with root_path so that each audio is loaded by its absolute path
 root_path = '/path/to/your/'
 protocol = '/path/to/your/evaluation/protocol/database_protocol.csv'
 protocol_df = pd.read_csv(protocol)
 protocol_df["Path"] = protocol_df["Path"].str.replace("$ROOT/", root_path)
 
-# Load SSL protocols
+# Load SSL model 
 ssl = Model(ssl_orig_output_dim, ssl_path)
 state_dict = torch.load(ckpt_path, weights_only=True)
 ssl.load_state_dict(state_dict)
