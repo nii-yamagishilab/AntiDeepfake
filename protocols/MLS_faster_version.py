@@ -12,8 +12,9 @@ in most machines. It looks like this:
 /my/base_path/Data/MLS/mls_dutch/train/audio/5764/4370/5764_4370_000049.flac
 /my/base_path/Data/MLS/mls_dutch/train/audio/5764/4370/5764_4370_000001.flac
 
-Now, we can skip scanning the whole MLS folder with python os.walk()
-You are encouraged to apply similar modifications for generating protocols for other large datasets, such as VoxCeleb or your own vocoded datasets.
+Now, we can skip scanning the whole MLS folder with python os.walk().
+You are encouraged to apply similar modifications for generating protocols for 
+other large datasets, such as VoxCeleb or your own vocoded datasets.
 
 no fake audios in this database
 
@@ -31,7 +32,6 @@ no fake audios in this database
 
 MLS.csv:
 """
-
 
 import os
 import csv

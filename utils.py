@@ -6,11 +6,9 @@ including:
 """
 
 import random
-import copy
 
 import torch
 import numpy as np
-from scipy import signal
 
 
 __author__ = "Wanying Ge, Xin Wang"

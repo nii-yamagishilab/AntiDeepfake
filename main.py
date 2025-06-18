@@ -1,5 +1,4 @@
-"""This script is used for model training. We have included some comments to help
-users better understand the code.
+"""This script is used for model training. 
 """
 import os
 import sys
@@ -14,15 +13,14 @@ from hyperpyyaml import load_hyperpyyaml
 
 import torch
 import torchaudio
-from torch.nn.parallel import DistributedDataParallel
 from torch.utils.data import DataLoader
 
 import speechbrain as sb
 from speechbrain.utils.logger import get_logger
 from speechbrain.dataio.dataloader import LoopedLoader
 
-from utils import load_weights, set_random_seed
 from dataio.dataio import dataio_prepare
+from utils import load_weights, set_random_seed
 
 
 __author__ = "Wanying Ge, Xin Wang"
@@ -387,8 +385,9 @@ class SSLBrain(sb.core.Brain):
             }
             df_score = pd.DataFrame(score_data)
             # Write the final score
-            df_score.to_csv(self.hparams.score_path, index=False)
-        print("Scores saved to {}".format(self.hparams.score_path))
+            if sb.utils.distributed.if_main_process():
+                df_score.to_csv(self.hparams.score_path, index=False)
+                print("Scores saved to {}".format(self.hparams.score_path))
 
 def main():
     ######

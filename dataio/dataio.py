@@ -1,3 +1,6 @@
+"""This script defines dataio_prepare() used to load and preprocess audio for
+train, valid, and test datasets.
+"""
 import random
 
 import torch
@@ -11,8 +14,6 @@ from dataio.rawboost import process_Rawboost_feature
 def dataio_prepare(hparams):
     data_folder = hparams["data_folder"]            
     # Load datasets and replace the placeholder '$ROOT' to the actual dataset path
-    # Data loading will work fine even if '$ROOT' is not written in df['Path'], i.e.,
-    # when you choose to write full audio path during protocol generation
     train_data = sb.dataio.dataset.DynamicItemDataset.from_csv(
         csv_path=hparams["train_csv"],
         replacements={"ROOT": data_folder},
@@ -158,7 +159,7 @@ def dataio_prepare(hparams):
         "num_workers": hparams["num_workers"],
         "pin_memory": True,
     }
-    # We do not need test_loader_kwargs{}, speechbrain will build one with bs=1 and
-    # without any padding automatically.
+    # We do not need test_loader_kwargs{}, speechbrain will build a test dataloader
+    # with bs=1 and without any padding automatically.
     return train_data, valid_data, test_data, \
            train_loader_kwargs, valid_loader_kwargs
