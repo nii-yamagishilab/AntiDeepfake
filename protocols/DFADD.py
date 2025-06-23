@@ -17,10 +17,9 @@ No additional protocol used, we simply walk through the directory
 
 DFADD.csv
 """
-
 import os
-import sys 
-import csv 
+import sys
+import csv
 
 try:
     import pandas as pd
@@ -71,7 +70,7 @@ def collect_metadata(data_folder):
                         "ID": ID_PREFIX + file_id,
                         "Label": label,
                         "SampleRate": metainfo.sample_rate,
-                        "Duration": round(metainfo.num_frames / metainfo.sample_rate, 2), 
+                        "Duration": round(metainfo.num_frames / metainfo.sample_rate, 2),
                         "Path": relative_path,
                         "Attack": attack,
                         "Speaker": speaker,

@@ -7,7 +7,6 @@ train.csv, valid.csv, and test.csv files.
 
 - Protocols listed in test_files are merged into test.csv.
 """
-
 import os
 import pandas as pd
 
@@ -31,19 +30,19 @@ def check_and_remove_duplicates(file_path, target_column='ID'):
 
 def generate_datasets_with_valid_split(train_files, test_files, output_folder="."):
     def process_files(file_list, valid_split=False):
-        """ Concadating different protocols, 
+        """ Concadating different protocols,
             and preserving some of the files for validation
         """
         combined_df = pd.DataFrame()  # Initialize an empty DataFrame
         combined_valid = pd.DataFrame()
         for file in file_list:
-            file_path = file 
+            file_path = file
             if not os.path.exists(file_path):
                 print(f"Warning: File {file} not found, skipping...")
                 continue
             # Check if there are duplicate IDs in the protocol,
             # SpeechBrain dataloader will stop initialization if there is any
-            df = check_and_remove_duplicates(file_path) 
+            df = check_and_remove_duplicates(file_path)
             # If we're processing validation data, split based on 'Proportion' column
             if valid_split and 'Proportion' in df.columns:
                 valid_df = df[df['Proportion'] == 'valid']

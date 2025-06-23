@@ -21,7 +21,6 @@ G0019 T0055G0019S0097 - aidatatang bonafide
 
 DECRO.csv:
 """
-
 import os
 import sys
 import csv
@@ -116,10 +115,10 @@ def collect_audio_metadata(metadata, sub_set):
             num_channels = -1
             lang = -1
         file_id = f'{subset_id}-{lang}-{row["ID"]}'
-        row["ID"] = ID_PREFIX + file_id  
+        row["ID"] = ID_PREFIX + file_id
         row["Duration"] = duration
         row["SampleRate"] = sample_rate
-        row["Path"] = relative_path 
+        row["Path"] = relative_path
         row["Proportion"] = subset_id
         row["AudioChannel"] = num_channels
         row["AudioEncoding"] = encoding

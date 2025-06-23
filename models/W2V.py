@@ -36,7 +36,7 @@ class SSLModel(torch.nn.Module):
            or next(self.model.parameters()).dtype != input_data.dtype:
             self.model.to(input_data.device, dtype=input_data.dtype)
             #self.model.eval()
-        if True:   
+        if True:
             if input_data.ndim == 3:
                 input_tmp = input_data[:, :, 0]
             else:

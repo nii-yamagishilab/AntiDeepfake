@@ -1,4 +1,4 @@
-"""This script is used for model training. 
+"""This script is used for model training.
 """
 import os
 import sys
@@ -71,7 +71,7 @@ class SSLBrain(sb.core.Brain):
     def compute_forward(self, batch, stage):
         """Computes forward pass through SSL model and returns binary class predictions 
         """
-        input_data = batch["wav"].data.to(device=self.device, non_blocking=True)        
+        input_data = batch["wav"].data.to(device=self.device, non_blocking=True)
         preds = self.modules.detector(input_data)
         return preds
 
@@ -94,7 +94,7 @@ class SSLBrain(sb.core.Brain):
             "loss": loss,
         }
         objectives["backprop_loss"] = loss
-        return objectives 
+        return objectives
 
     def fit(
         self,
@@ -237,7 +237,7 @@ class SSLBrain(sb.core.Brain):
             self.step = 0
             self.on_stage_end(sb.Stage.VALID, avg_valid_loss, epoch)
         self.modules.train()
-        return 
+        return
     
     def fit_batch(self, batch):
         """ compute_forward();compute_objectives();optimizers_step()
@@ -394,7 +394,7 @@ def main():
     # initialization
     ######
     hparams_file, run_opts, overrides = sb.parse_arguments(sys.argv[1:])
-    run_opts["find_unused_parameters"] = True    
+    run_opts["find_unused_parameters"] = True
     sb.utils.distributed.ddp_init_group(run_opts)
     # load configuration file
     with open(hparams_file, encoding="utf-8") as fin:
@@ -407,7 +407,7 @@ def main():
         hparams["precision"] = "bf16"
 
     ######
-    # prepare experiment 
+    # prepare experiment
     ######
     sb.create_experiment_directory(
         experiment_directory=hparams["output_folder"],
@@ -445,11 +445,11 @@ def main():
     )
 
     ######
-    # evaluation start 
+    # evaluation start
     ######
     brain.evaluate(
         test_data,
-        min_key="EqualErrorRate",    
+        min_key="EqualErrorRate",
     )
     return
 

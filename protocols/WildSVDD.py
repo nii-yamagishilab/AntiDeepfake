@@ -25,10 +25,9 @@ challenge
 
 WildSVDD.csv:
 """
-
 import os
-import sys 
-import csv 
+import sys
+import csv
 
 try:
     import pandas as pd
@@ -106,7 +105,7 @@ def write_csv(metadata):
               "Proportion", "AudioChannel", "AudioEncoding", "AudioBitSample",\
               "Language"]
     metadata = pd.DataFrame(metadata)
-    metadata = metadata[header] 
+    metadata = metadata[header]
     metadata.to_csv(output_csv, index=False)
 
 # Main script

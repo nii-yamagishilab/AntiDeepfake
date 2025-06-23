@@ -65,7 +65,7 @@ def collect_metadata(data_folder):
                 elif 'test' in subset:
                     proportion = 'test'
                 speaker = parts[4]
-                label = 'fake' 
+                label = 'fake'
                 lang = 'EN'
                 # ID
                 file_id = f"{attack}-{os.path.splitext(file)[0]}"
@@ -77,7 +77,7 @@ def collect_metadata(data_folder):
                         "ID": ID_PREFIX + file_id,
                         "Label": label,
                         "SampleRate": metainfo.sample_rate,
-                        "Duration": round(metainfo.num_frames / metainfo.sample_rate, 2), 
+                        "Duration": round(metainfo.num_frames / metainfo.sample_rate, 2),
                         "Path": relative_path,
                         "Attack": attack,
                         "Speaker": speaker,

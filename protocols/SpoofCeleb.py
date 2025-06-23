@@ -29,10 +29,9 @@ a00/id10349/QGlexcvxGFo-00007-001.flac,id10349,a00
 
 SpoofCeleb.csv:
 """
-
 import os
-import sys 
-import csv 
+import sys
+import csv
 
 try:
     import pandas as pd
@@ -116,7 +115,7 @@ def collect_audio_metadata(metadata, sub_set):
         row["Duration"] = duration
         row["SampleRate"] = sample_rate
         row["Path"] = filepath
-        row["Proportion"] = proportion 
+        row["Proportion"] = proportion
         row["AudioChannel"] = num_channels
         row["AudioEncoding"] = encoding
         row["AudioBitSample"] = bitpersample

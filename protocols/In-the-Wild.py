@@ -12,7 +12,6 @@ path/to/your/In-the-Wild/release_in_the_wild/
 
 In-the-Wild.csv:
 """
-
 import os
 import sys
 import csv
@@ -43,7 +42,7 @@ output_csv = dataset_name + ".csv"
 
 # Function to read the protocol file and collect metadata
 def read_protocol(protocol_file):
-    # define converter 
+    # define converter
     # to rename .wav from ID
     converter_name = lambda x: os.path.splitext(x)[0]
     # to change bona-fide -> real, spoof -> fake
@@ -52,8 +51,8 @@ def read_protocol(protocol_file):
     # use panads to load the csv and handle the header
     # use converter to handle file ID and label
     metadata = pd.read_csv(
-        protocol_file, 
-        sep =',', 
+        protocol_file,
+        sep =',',
         header=0,
         converters = {'file': converter_name, 'label': converter_label})
     
@@ -95,7 +94,7 @@ def collect_audio_metadata(metadata, data_folder):
             # duration (num_frames -> number of sampling points)
             duration = round(metainfo.num_frames / sample_rate, 2)
             # file path
-            filepath = file_path.replace(root_folder, "$ROOT/") 
+            filepath = file_path.replace(root_folder, "$ROOT/")
             # encoding format
             encoding = metainfo.encoding
             # bit per sample

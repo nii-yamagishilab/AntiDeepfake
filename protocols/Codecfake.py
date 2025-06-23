@@ -21,10 +21,9 @@ F02_SSB13650058.wav fake 2
 
 Codecfake.csv:
 """
-
 import os
-import sys 
-import csv 
+import sys
+import csv
 
 try:
     import pandas as pd
@@ -122,7 +121,7 @@ def collect_audio_metadata(metadata, sub_set):
         row["Attack"] = atk
         row["SampleRate"] = sample_rate
         row["Path"] = filepath
-        row["Proportion"] = proportion 
+        row["Proportion"] = proportion
         row["AudioChannel"] = num_channels
         row["AudioEncoding"] = encoding
         row["AudioBitSample"] = bitpersample

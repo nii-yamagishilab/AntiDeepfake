@@ -13,7 +13,6 @@ and no fake audios in this database
 
 VoxCeleb.csv:
 """
-
 import os
 import sys
 import csv
@@ -35,7 +34,7 @@ root_folder = '/path/to/your/'
 dataset_name = 'VoxCeleb2'
 data_folder = os.path.join(root_folder, dataset_name, 'dev', 'aac')
 ID_PREFIX = 'VoxCeleb2-'
-output_csv = dataset_name + '.csv' 
+output_csv = dataset_name + '.csv'
 
 # Function to collect metadata from the directory structure
 def collect_metadata(data_folder):
@@ -64,7 +63,7 @@ def collect_metadata(data_folder):
                         "ID": ID_PREFIX + file_id,
                         "Label": label,
                         "SampleRate": metainfo.sample_rate,
-                        "Duration": round(metainfo.num_frames / metainfo.sample_rate, 2), 
+                        "Duration": round(metainfo.num_frames / metainfo.sample_rate, 2),
                         "Path": relative_path,
                         "Attack": attack,
                         "Speaker": speaker,
@@ -77,7 +76,7 @@ def collect_metadata(data_folder):
                 except Exception as e:
                 # Handle any exception and skip this file
                     print(f"Error: Could not load file {file_path}. Skipping. Reason: {e}")
-    return metadata 
+    return metadata
 
 # Write metadata to CSV
 def write_csv(metadata):

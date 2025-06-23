@@ -4,7 +4,6 @@ including:
 * Loading model weights - load_weights()
 * Setting random seeds for reproducibility - set_random_seed()
 """
-
 import random
 
 import torch
@@ -15,10 +14,9 @@ __author__ = "Wanying Ge, Xin Wang"
 __email__ = "gewanying@nii.ac.jp, wangxin@nii.ac.jp"
 __copyright__ = "Copyright 2025, National Institute of Informatics"
 
-def load_weights(trg_state, path, func_name_change=lambda x: x): 
+def load_weights(trg_state, path, func_name_change=lambda x: x):
     """load_weights(trg_state, path)
     Load trained weights to the state_dict() of a torch.module on CPU
-    
     """
     # load to CPU
     loaded_state = torch.load(path, map_location=lambda storage, loc: storage)
@@ -43,8 +41,8 @@ def load_weights(trg_state, path, func_name_change=lambda x: x):
 def set_random_seed(seed):
     torch.manual_seed(seed)
     torch.cuda.manual_seed(seed)
-    torch.cuda.manual_seed_all(seed) 
+    torch.cuda.manual_seed_all(seed)
     np.random.seed(seed)
     random.seed(seed)
-    torch.backends.cudnn.deterministic = True 
+    torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False

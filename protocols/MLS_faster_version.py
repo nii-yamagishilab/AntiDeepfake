@@ -32,10 +32,8 @@ no fake audios in this database
 
 MLS.csv:
 """
-
 import os
 import csv
-import torchaudio
 
 try:
     import pandas as pd
@@ -87,7 +85,7 @@ def collect_audio_metadata(metadata, root_folder):
 # ['$ROOT', 'MLS', 'mls_english', 'train', 'audio', '6249', '9965', '6249_9965_001469.flac']
             subset = parts[3]
             if 'train' in subset:
-                    proportion = 'train'
+                proportion = 'train'
             elif 'dev' in subset:
                 proportion = 'valid'
             elif 'test' in subset:
@@ -132,7 +130,7 @@ def collect_audio_metadata(metadata, root_folder):
         row["Duration"] = duration
         row["SampleRate"] = sample_rate
         row["Path"] = filepath
-        row["Proportion"] = proportion 
+        row["Proportion"] = proportion
         row["AudioChannel"] = num_channels
         row["AudioEncoding"] = encoding
         row["AudioBitSample"] = bitpersample

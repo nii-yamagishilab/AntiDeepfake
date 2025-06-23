@@ -168,55 +168,55 @@ def process_Rawboost_feature(feature, sr, args, algo):
             feature,
             args['SSI_additive_noise']['SNRmin'],
             args['SSI_additive_noise']['SNRmax'],
-            args['LnL_convolutive_noise']['nBands'],                                    
-            args['LnL_convolutive_noise']['minF'],                                      
-            args['LnL_convolutive_noise']['maxF'],                                      
-            args['LnL_convolutive_noise']['minBW'],                                     
-            args['LnL_convolutive_noise']['maxBW'],                                     
-            args['LnL_convolutive_noise']['minCoeff'],                                  
-            args['LnL_convolutive_noise']['maxCoeff'],                                  
-            args['LnL_convolutive_noise']['minG'],                                      
-            args['LnL_convolutive_noise']['maxG'],                                      
-            sr                                                                          
+            args['LnL_convolutive_noise']['nBands'],
+            args['LnL_convolutive_noise']['minF'],
+            args['LnL_convolutive_noise']['maxF'],
+            args['LnL_convolutive_noise']['minBW'],
+            args['LnL_convolutive_noise']['maxBW'],
+            args['LnL_convolutive_noise']['minCoeff'],
+            args['LnL_convolutive_noise']['maxCoeff'],
+            args['LnL_convolutive_noise']['minG'],
+            args['LnL_convolutive_noise']['maxG'],
+            sr
         )
     elif algo == 5:
-        feature = LnL_convolutive_noise(                                                
-            feature,                                                                    
-            args['LnL_convolutive_noise']['N_f'],                                       
-            args['LnL_convolutive_noise']['nBands'],                                    
-            args['LnL_convolutive_noise']['minF'],                                      
-            args['LnL_convolutive_noise']['maxF'],                                      
-            args['LnL_convolutive_noise']['minBW'],                                     
-            args['LnL_convolutive_noise']['maxBW'],                                     
-            args['LnL_convolutive_noise']['minCoeff'],                                  
-            args['LnL_convolutive_noise']['maxCoeff'],                                  
-            args['LnL_convolutive_noise']['minG'],                                      
-            args['LnL_convolutive_noise']['maxG'],                                      
-            args['LnL_convolutive_noise']['minBiasLinNonLin'],                          
-            args['LnL_convolutive_noise']['maxBiasLinNonLin'],                          
-            sr                                                                          
+        feature = LnL_convolutive_noise(
+            feature,
+            args['LnL_convolutive_noise']['N_f'],
+            args['LnL_convolutive_noise']['nBands'],
+            args['LnL_convolutive_noise']['minF'],
+            args['LnL_convolutive_noise']['maxF'],
+            args['LnL_convolutive_noise']['minBW'],
+            args['LnL_convolutive_noise']['maxBW'],
+            args['LnL_convolutive_noise']['minCoeff'],
+            args['LnL_convolutive_noise']['maxCoeff'],
+            args['LnL_convolutive_noise']['minG'],
+            args['LnL_convolutive_noise']['maxG'],
+            args['LnL_convolutive_noise']['minBiasLinNonLin'],
+            args['LnL_convolutive_noise']['maxBiasLinNonLin'],
+            sr
         )
-        feature = ISD_additive_noise(                                                   
-            feature,                                                                    
-            args['ISD_additive_noise']['P'],                                            
-            args['ISD_additive_noise']['g_sd']                                          
+        feature = ISD_additive_noise(
+            feature,
+            args['ISD_additive_noise']['P'],
+            args['ISD_additive_noise']['g_sd']
         )
     elif algo == 6:
-        feature = LnL_convolutive_noise(                                                
-            feature,                                                                    
-            args['LnL_convolutive_noise']['N_f'],                                       
-            args['LnL_convolutive_noise']['nBands'],                                    
-            args['LnL_convolutive_noise']['minF'],                                      
-            args['LnL_convolutive_noise']['maxF'],                                      
-            args['LnL_convolutive_noise']['minBW'],                                     
-            args['LnL_convolutive_noise']['maxBW'],                                     
-            args['LnL_convolutive_noise']['minCoeff'],                                  
-            args['LnL_convolutive_noise']['maxCoeff'],                                  
-            args['LnL_convolutive_noise']['minG'],                                      
-            args['LnL_convolutive_noise']['maxG'],                                      
-            args['LnL_convolutive_noise']['minBiasLinNonLin'],                          
-            args['LnL_convolutive_noise']['maxBiasLinNonLin'],                          
-            sr                                                                          
+        feature = LnL_convolutive_noise(
+            feature,
+            args['LnL_convolutive_noise']['N_f'],
+            args['LnL_convolutive_noise']['nBands'],
+            args['LnL_convolutive_noise']['minF'],
+            args['LnL_convolutive_noise']['maxF'],
+            args['LnL_convolutive_noise']['minBW'],
+            args['LnL_convolutive_noise']['maxBW'],
+            args['LnL_convolutive_noise']['minCoeff'],
+            args['LnL_convolutive_noise']['maxCoeff'],
+            args['LnL_convolutive_noise']['minG'],
+            args['LnL_convolutive_noise']['maxG'],
+            args['LnL_convolutive_noise']['minBiasLinNonLin'],
+            args['LnL_convolutive_noise']['maxBiasLinNonLin'],
+            sr
         )
         feature = SSI_additive_noise(
             feature,
@@ -229,30 +229,30 @@ def process_Rawboost_feature(feature, sr, args, algo):
             args['LnL_convolutive_noise']['maxBW'],
             args['LnL_convolutive_noise']['minCoeff'],
             args['LnL_convolutive_noise']['maxCoeff'],
-            args['LnL_convolutive_noise']['minG'],                                      
-            args['LnL_convolutive_noise']['maxG'],                                      
-            sr                                                                          
+            args['LnL_convolutive_noise']['minG'],
+            args['LnL_convolutive_noise']['maxG'],
+            sr
         )
     elif algo == 7:
-        feature = ISD_additive_noise(                                                   
-            feature,                                                                    
-            args['ISD_additive_noise']['P'],                                            
-            args['ISD_additive_noise']['g_sd']                                          
+        feature = ISD_additive_noise(
+            feature,
+            args['ISD_additive_noise']['P'],
+            args['ISD_additive_noise']['g_sd']
         )
-        feature = SSI_additive_noise(                                                   
-            feature,                                                                    
-            args['SSI_additive_noise']['SNRmin'],                                     
-            args['SSI_additive_noise']['SNRmax'],                                     
-            args['LnL_convolutive_noise']['nBands'],                                    
-            args['LnL_convolutive_noise']['minF'],                                      
-            args['LnL_convolutive_noise']['maxF'],                                      
-            args['LnL_convolutive_noise']['minBW'],                                     
-            args['LnL_convolutive_noise']['maxBW'],                                     
-            args['LnL_convolutive_noise']['minCoeff'],                                  
-            args['LnL_convolutive_noise']['maxCoeff'],                                  
-            args['LnL_convolutive_noise']['minG'],                                      
-            args['LnL_convolutive_noise']['maxG'],                                      
-            sr                                                                          
+        feature = SSI_additive_noise(
+            feature,
+            args['SSI_additive_noise']['SNRmin'],
+            args['SSI_additive_noise']['SNRmax'],
+            args['LnL_convolutive_noise']['nBands'],
+            args['LnL_convolutive_noise']['minF'],
+            args['LnL_convolutive_noise']['maxF'],
+            args['LnL_convolutive_noise']['minBW'],
+            args['LnL_convolutive_noise']['maxBW'],
+            args['LnL_convolutive_noise']['minCoeff'],
+            args['LnL_convolutive_noise']['maxCoeff'],
+            args['LnL_convolutive_noise']['minG'],
+            args['LnL_convolutive_noise']['maxG'],
+            sr
         )
     elif algo == 8:
         feature1 = LnL_convolutive_noise(

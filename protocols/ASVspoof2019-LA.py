@@ -150,8 +150,8 @@ def write_csv(metadata):
 if __name__ == "__main__":
     combined_metadata = []
     for protocol_file in protocol_files:
-        protocol_file = os.path.join(data_folder, 
-                            'ASVspoof2019_LA_cm_protocols', 
+        protocol_file = os.path.join(data_folder,
+                            'ASVspoof2019_LA_cm_protocols',
                              protocol_file)
         print(f"Processing protocol: {protocol_file}")
 

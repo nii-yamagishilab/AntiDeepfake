@@ -2,7 +2,8 @@
 """script to create protocol for VoiceMOS database
 No additional protocol used, we simply walk through the directory,
 
-We use this in our training:
+We use this in our training,
+which contains only fake audio
 /path/to/your/VoiceMOS/
 ├── main/
 │   ├── DATA/
@@ -10,7 +11,7 @@ We use this in our training:
 │   │   │   ├── xx.wav
 │   │   │   ├── . . .
 The following code will process the original blizzard challenge data,
-which contains real and fake audio
+which contains same fake audio but additional real audio
 /path/to/your/VoiceMOS/
 ├── main/
 │   ├── blizzard_wavs_and_scores_2008_release_version_1/
@@ -76,7 +77,7 @@ def collect_metadata(data_folder):
                         "ID": ID_PREFIX + file_id,
                         "Label": label,
                         "SampleRate": metainfo.sample_rate,
-                        "Duration": round(metainfo.num_frames / metainfo.sample_rate, 2), 
+                        "Duration": round(metainfo.num_frames / metainfo.sample_rate, 2),
                         "Path": relative_path,
                         "Attack": attack,
                         "Speaker": speaker,
@@ -89,7 +90,7 @@ def collect_metadata(data_folder):
                 except Exception as e:
                 # Handle any exception and skip this file
                     print(f"Error: Could not load file {file_path}. Skipping. Reason: {e}")
-    return metadata 
+    return metadata
 
 # Write metadata to CSV
 def write_csv(metadata):

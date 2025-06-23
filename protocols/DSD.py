@@ -16,7 +16,6 @@ Utterence name (file name),TTS or VC,Is multi-speaker?,Language,Noise type 1,Sou
 
 DSD.csv:
 """
-
 import os
 import sys
 import csv
@@ -83,7 +82,7 @@ def collect_metadata(protocol_file):
                     "ID": ID_PREFIX + file_id,
                     "Label": label,
                     "SampleRate": metainfo.sample_rate,
-                    "Duration": round(metainfo.num_frames / metainfo.sample_rate, 2), 
+                    "Duration": round(metainfo.num_frames / metainfo.sample_rate, 2),
                     "Path": relative_path,
                     "Attack": attack,
                     "Speaker": speaker,
@@ -96,7 +95,7 @@ def collect_metadata(protocol_file):
             except Exception as e:
             # Handle any exception and skip this file
                 print(f"Error: Could not load file {file_path}. Skipping. Reason: {e}")
-    return metadata 
+    return metadata
 
 # Write metadata to CSV
 def write_csv(metadata):

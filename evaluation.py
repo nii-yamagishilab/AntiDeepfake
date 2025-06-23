@@ -12,7 +12,6 @@ ID_PREFIX_1_wav2_ID,"[3.4324636459350586, -3.5558271408081055]",0
 ID_PREFIX_2_wav3_ID,"[-3.8531546592712402, 3.871497631072998]",1
 ID_PREFIX_2_wav4_ID,"[3.6327223777770996, -3.7554166316986084]",0
 """
-
 import sys
 import ast
 
@@ -48,10 +47,10 @@ def extract_scores(score_str):
 def parse_file(filename):
     data = {
         # To get pooled metrics for the whole score.csv file
-        'all': {'y_true': [], 'logits': []}, 
+        'all': {'y_true': [], 'logits': []},
         # To get metrics for each specific databases,
         # based on the ID_PREFIX defined when saving database protocol
-        'ID_PREFIX_1': {'y_true': [], 'logits': []}, 
+        'ID_PREFIX_1': {'y_true': [], 'logits': []},
         'ID_PREFIX_2': {'y_true': [], 'logits': []},
         }
 

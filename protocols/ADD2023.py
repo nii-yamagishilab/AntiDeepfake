@@ -91,12 +91,12 @@ def collect_audio_metadata(metadata, root_folder):
         row["Duration"] = duration
         row["SampleRate"] = sample_rate
         row["Path"] = filepath
-        row["Proportion"] = proportion 
+        row["Proportion"] = proportion
         row["AudioChannel"] = num_channels
         row["AudioEncoding"] = encoding
         row["AudioBitSample"] = bitpersample
-        row["Language"] = language 
-        return row 
+        row["Language"] = language
+        return row
 
     metadata = metadata.parallel_apply(lambda x: __get_audio_meta(x), axis=1)
     return metadata

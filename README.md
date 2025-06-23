@@ -175,6 +175,7 @@ torchrun --nnodes=1 --nproc-per-node=NUM_GPU main.py hparams/<MODEL>.yaml
 ### 4. Performance evaluation
 
 #### With CSV score
+Run:
 ```
 python evaluation.py /base_path/Log/exps/exp_mms_300m_my_job/evaluation_score.csv
 ```

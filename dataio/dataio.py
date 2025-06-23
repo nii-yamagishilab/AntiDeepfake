@@ -12,7 +12,7 @@ from speechbrain.dataio.sampler import DynamicBatchSampler
 from dataio.rawboost import process_Rawboost_feature
 
 def dataio_prepare(hparams):
-    data_folder = hparams["data_folder"]            
+    data_folder = hparams["data_folder"]
     # Load datasets and replace the placeholder '$ROOT' to the actual dataset path
     train_data = sb.dataio.dataset.DynamicItemDataset.from_csv(
         csv_path=hparams["train_csv"],
@@ -65,13 +65,13 @@ def dataio_prepare(hparams):
             start_idx = random.randint(0, max_start)
             # Get the shorter segment
             wav = wav[start_idx:start_idx + segment_length]
-        assert wav.shape[0] <= 13 * int(SampleRate), "Waveform segment is too long."    
+        assert wav.shape[0] <= 13 * int(SampleRate), "Waveform segment is too long."
         ### Finish cutting ###
         # Resampling to 16kHz if not
         if int(SampleRate) != 16000:
             wav = torchaudio.functional.resample(
                 wav,
-                orig_freq=int(SampleRate), 
+                orig_freq=int(SampleRate),
                 new_freq=16000,
             )
         # RawBoost augmentation
@@ -108,7 +108,7 @@ def dataio_prepare(hparams):
         if int(SampleRate) != 16000:
             wav = torchaudio.functional.resample(
                 wav,
-                orig_freq=int(SampleRate), 
+                orig_freq=int(SampleRate),
                 new_freq=16000,
             )
         with torch.no_grad():
@@ -130,7 +130,7 @@ def dataio_prepare(hparams):
     sb.dataio.dataset.add_dynamic_item([test_data], test_audio_pipeline)
     # Desired dataset to return pre-defined keys batch-wisely
     sb.dataio.dataset.set_output_keys(
-        datasets=[train_data, valid_data, test_data], 
+        datasets=[train_data, valid_data, test_data],
         output_keys=["id", "wav", "logit"]
     ) 
 
@@ -154,7 +154,7 @@ def dataio_prepare(hparams):
         "pin_memory": True,
     }
     valid_loader_kwargs = {
-        "batch_size": hparams["valid_dataloader_options"]["batch_size"], 
+        "batch_size": hparams["valid_dataloader_options"]["batch_size"],
         "collate_fn": PaddedBatch,
         "num_workers": hparams["num_workers"],
         "pin_memory": True,

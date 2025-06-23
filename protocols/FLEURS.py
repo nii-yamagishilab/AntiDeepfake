@@ -18,7 +18,6 @@ no fake audios in this database
 
 FLEURS.csv:
 """
-
 FLEURS_FOLDER_TO_SHORT = {
     "af_za": "AF",
     "am_et": "AM",
@@ -182,7 +181,7 @@ def collect_metadata(data_folder):
                         "ID": ID_PREFIX + file_id,
                         "Label": label,
                         "SampleRate": metainfo.sample_rate,
-                        "Duration": round(metainfo.num_frames / metainfo.sample_rate, 2), 
+                        "Duration": round(metainfo.num_frames / metainfo.sample_rate, 2),
                         "Path": relative_path,
                         "Attack": attack,
                         "Speaker": speaker,

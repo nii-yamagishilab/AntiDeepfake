@@ -70,7 +70,7 @@ def collect_audio_metadata(metadata):
         subset_id = 'eval'
         label = row["Label"]
         # Check if file exists
-        if os.path.exists(file_path): 
+        if os.path.exists(file_path):
             # use torchaudio.info to increase the speed of loading
             metainfo = torchaudio.info(file_path)
             # sampling rate
