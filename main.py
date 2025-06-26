@@ -40,10 +40,9 @@ class SSLBrain(sb.core.Brain):
         # furthermore, define load_checkpoint to manually load
         # modules if they are added not via yaml file
 
-        # load pre-trained weights if necessary
+        # load pre-trained weights
         # see comment in the function
-        if self.hparams.use_pretrained:
-            self._init_model()
+        self._init_model()
         
         return
 
@@ -63,8 +62,13 @@ class SSLBrain(sb.core.Brain):
                 logger.info("Loading pre-trained weights {:s} from {:s}".format(
                     key, str(pretrained_path))
                 )
+                def name_mapper(n): return f"m_ssl.model.{n}"
                 # load pre-trained model for specific module
-                load_weights(getattr(self.modules, key).state_dict(), pretrained_path)
+                load_weights(
+                    getattr(self.modules, key).state_dict(), 
+                    pretrained_path,
+                    func_name_change=name_mapper,
+                )
 
         return
 

@@ -19,7 +19,14 @@ def load_weights(trg_state, path, func_name_change=lambda x: x):
     Load trained weights to the state_dict() of a torch.module on CPU
     """
     # load to CPU
-    loaded_state = torch.load(path, map_location=lambda storage, loc: storage)
+    loaded_state = torch.load(
+        path, 
+        map_location=lambda storage, loc: storage,
+        weights_only=False,
+    )
+
+    if 'model' in loaded_state:
+        loaded_state = loaded_state['model']
 
     # customized loading patterns (provided by SASV baseline code)
     for name, param in loaded_state.items():

@@ -7,20 +7,12 @@ Usage:
 
 Before running the script, please follow the steps below to modify the code accordingly:
 
-Step [1]: Specify the actual path to your own checkpoint.
-    - This should be the path to the `.ckpt` file saved when you ran `main.py`.
+Step [1]: Specify model name and the actual path to your own checkpoint.
+    - model names: w2v_small; w2v_large; mms_300m; mms_1b; xlsr_1b; xlsr_2b;
+                   hubert_xlarge_ll60k;
+    - ckpt_path should be the path to the `.ckpt` file saved when you ran `main.py`.
     - Default path format:
         <base_path>/Log/exps/exp_mms_1b_exp/save/CKPT+2025-01-23+09-40-59+00/ssl.ckpt
-
-    Also, specify the path to the Fairseq checkpoint used to build the SSL front-end.
-    - Default path format:
-        <base_path>/Log/ssl-weights/base_1b.pt
-
-    Additionally, set the output feature dimension for the SSL front-end.
-    - set ssl_orig_output_dim to 768 for w2v_small
-    - 1024 for w2v_large, mms_300m
-    - 1280 for mms_1b, xlsr_1b, hubert_xl
-    - 1920 for xlsr_2b 
 
 Step [2]: Provide the path to your test dataset and its corresponding protocol file.
     - You can refer to any .py files in ./protocols to generate corresponding protocols for your data
@@ -34,7 +26,9 @@ import torch
 import torchaudio
 import pandas as pd
 
+# use W2V for wav2vec2 and HBT for Hubert
 from models.W2V import Model
+# from models.HBT import Model
 
 
 __author__ = "Wanying Ge"
@@ -54,19 +48,18 @@ def load_and_preprocess(wav_path):
 score_name = "SCORE"
 
 # Step[1]: modify here for each used SSL models
-ssl_orig_output_dim = 1280
+model_name = 'mms_300m'
 ckpt_path = "/path/to/your/own/checkpoint/ssl.ckpt"
-ssl_path = "/path/to/fairseq/model/checkpoint/base_1b.pt"
 
 # Step[2]: Define paths for loading audio files
 # replace "$ROOT/" with root_path so that each audio is loaded by its absolute path
 root_path = '/path/to/your/'
 protocol = '/path/to/your/evaluation/protocol/database_protocol.csv'
 protocol_df = pd.read_csv(protocol)
-protocol_df["Path"] = protocol_df["Path"].str.replace("$ROOT/", root_path)
+protocol_df["Path"] = protocol_df["Path"].str.replace("$ROOT/", root_path, regex=False)
 
 # Load SSL model 
-ssl = Model(ssl_orig_output_dim, ssl_path)
+ssl = Model(model_name)
 state_dict = torch.load(ckpt_path, weights_only=True)
 ssl.load_state_dict(state_dict)
 ssl.cuda().eval()

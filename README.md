@@ -6,13 +6,13 @@
   <img src="https://github.com/nii-yamagishilab/AntiDeepfake/blob/main/logo.png?raw=true" width="60%" alt="AntiDeepfake" />
 </div>
 <div align="center" style="line-height: 1;">
-  <a href="https://huggingface.co/nii-yamagishilab"><img alt="Hugging Face"
+  <a href="https://huggingface.co/collections/nii-yamagishilab/antideepfake-685a1788fc514998e841cdfc"><img alt="Hugging Face"
     src="https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-NII Yamagishi Lab-ffc107?color=ffc107&logoColor=white"/></a>
   <a href="https://github.com/nii-yamagishilab/AntiDeepfake/blob/main/LICENSE-CODE"><img alt="Code License"
     src="https://img.shields.io/badge/Code_License-BSD 3-f5de53?&color=f5de53"/></a>
   <a href="https://github.com/nii-yamagishilab/AntiDeepfake/blob/main/LICENSE-CHECKPOINT"><img alt="Model License"
     src="https://img.shields.io/badge/Checkpoint_License-CC BY%20NC%20SA 4.0-f5de53?&color=f5de53"/></a>
-<a href="https://zenodo.org/record/your_record_id">
+<a href="https://zenodo.org/records/15580543">
   <img alt="Zenodo" src="https://img.shields.io/badge/%20Zenodo-Pretrained%20Checkpoints-0077C8?logo=zenodo&logoColor=white" />
 </a>
 
@@ -26,7 +26,7 @@
 
 The AntiDeepfake project provides a series of powerful foundation models post-trained for deepfake detection. The AntiDeepfake model can be used for feature extraction for deepfake detection in a zero-shot manner, or it may be further fine-tuned and optimized for a specific database or deepfake-related task.
 
-This table below summarizes performance across multiple evaluation datasets, along with their sizes, to help guide your selection.
+This table below summarizes performance across multiple evaluation datasets, along with model sizes, to help guide your selection.
 
 For more technical details and analysis, please refer to our paper [Post-training for Deepfake Speech Detection](paper-link).
 
@@ -50,6 +50,7 @@ For more technical details and analysis, please refer to our paper [Post-trainin
 
 ## 📢 News and Updates
 
+[June 27, 2025] Initial release!!!
 
 ## Table of Contents
 - [Try it out](#try-it-out)
@@ -93,7 +94,7 @@ pip install --editable .
 pip install tensorboard tensorboardX soundfile pandarallel scikit-learn numpy==1.21.2 pandas==1.4.3 scipy==1.7.2
 ```
 
-Additionally, to train or run `W2V_Small`, `W2V_Large` and `HuBERT_XL`, you need to update line 315 in `fairseq/fairseq/checkpoint_utils.py` to:
+Additionally, to train or run pre-trained `W2V_Small`, `W2V_Large` and `HuBERT_XL` Fairseq checkpoints, you need to update line 315 in `fairseq/fairseq/checkpoint_utils.py` to:
 ```
 state = torch.load(f, map_location=torch.device("cpu"), weights_only=False) 
 ```
@@ -129,11 +130,11 @@ Below is an overview of our working directory structure. This is provided as a r
 │   │   ├── test.csv        # The generated test set protocol
 
 ```
-### 1. Download pretrained Fariseq checkpoints
+### 1. Download Fairseq checkpoints
 
-Please download the pretrained SSL checkpoints from Fairseq GitHub repo to your `/base_path/Log/ssl-weights/`. These checkpoints are used to build the front-end SSL architecture in this project.
+Our training script initializes SSL front-end with random weights and, by default, replaces them with the corresponding pretrained Fairseq checkpoints. Please download the pretrained SSL checkpoints from Fairseq GitHub repo to your `/base_path/Log/ssl-weights/`.
 
-Please note that this step is not for downloading our AntiDeepfake checkpoints.
+To [fine-tune](#5-further-fine-tuning) our AntiDeepfake checkpoints, simply replace the initialized weights with those from our checkpoint files.
 
 | Model           | Download Link                                                                                                                                                 |
 | --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -164,7 +165,8 @@ python main.py hparams/mms_300m.yaml \
     --base_path /your/base_path \
     --exp_name my_job \
     --lr 1e-6 \
-    --use_da True      # Enable RawBoost data augmentation
+    --valid_step 2025 \ # Perform full validation every 2025 mini-batches
+    --use_da True       # Enable RawBoost data augmentation
 ```
 Configuration YAML files are named after the model they correspond to. Training logs and checkpoints will be saved under `/base_path/Log/exps/exp_mms_300m_my_job`. If this exp folder already exists, the script will try to resume training from the last saved checkpoint. Evaluation results with the best validation model will be stored in the same folder with name `evaluation_score.csv`.
 
@@ -199,11 +201,9 @@ You can use `test.py` for standalone score generation with any model checkpoint,
 
 ### 5. Further fine-tuning
 
-We provide our AntiDeepfake .ckpt checkpoints on [Zenodo](https://zenodo.org/) as well as in .safetensors format on [Hugging Face](https://huggingface.co/nii-yamagishilab). To continue fine-tuning with these checkpoints, please use the same training script from Step 3 and:
-  - add `--use_pretrained True`
-  - add `--pretrained_weights '{"detector": "/path/to/your/downloaded/antideepfake/mms_300m.ckpt"}'`
+We provide our AntiDeepfake .ckpt checkpoints on [Zenodo](https://zenodo.org/records/15580543) as well as in .safetensors format on [Hugging Face](https://huggingface.co/collections/nii-yamagishilab/antideepfake-685a1788fc514998e841cdfc). To continue fine-tuning with these checkpoints, please use the same training script from Step 3 add `--pretrained_weights '{"detector": "/path/to/your/downloaded/antideepfake/mms_300m.ckpt"}'`
 
-Fine-tuning will follow a similar process to training a new model, except that SSL weights will be initialized as AntiDeepfake checkpoints.
+Fine-tuning will follow a similar process to training a new model, except that SSL weights will be replaced as AntiDeepfake checkpoints.
 
 Below is our evaluation performance of fine-tuning AntiDeepfake models on Deepfake-Eval-2024 train set (PT = Pre-training, PST = Post-training, FT = Fine-tuning, 4s = Input Duration is 4 seconds).
 
