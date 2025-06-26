@@ -61,7 +61,7 @@ For more technical details and analysis, please refer to our paper [Post-trainin
 
 ## Try it out
 
-Full inference script is available on each model’s [Hugging Face](https://huggingface.co/nii-yamagishilab) page. Simply copy some audio files and run the script to get their detection scores. 
+Full inference script is available on each model’s [Hugging Face](https://huggingface.co/collections/nii-yamagishilab/antideepfake-685a1788fc514998e841cdfc) page. Simply copy some audio files and run the script to get their detection scores. 
 
 ## Installation
 This setup is recommended if you plan to run custom experiments with the code.
@@ -93,12 +93,6 @@ pip install --editable .
 ### Install other packages ###
 pip install tensorboard tensorboardX soundfile pandarallel scikit-learn numpy==1.21.2 pandas==1.4.3 scipy==1.7.2
 ```
-
-Additionally, to train or run pre-trained `W2V_Small`, `W2V_Large` and `HuBERT_XL` Fairseq checkpoints, you need to update line 315 in `fairseq/fairseq/checkpoint_utils.py` to:
-```
-state = torch.load(f, map_location=torch.device("cpu"), weights_only=False) 
-```
-
 
 ## Usage
 
