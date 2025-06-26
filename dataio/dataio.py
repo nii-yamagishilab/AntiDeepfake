@@ -11,6 +11,11 @@ from speechbrain.dataio.sampler import DynamicBatchSampler
 
 from dataio.rawboost import process_Rawboost_feature
 
+
+__author__ = "Wanying Ge, Xin Wang"
+__email__ = "gewanying@nii.ac.jp, wangxin@nii.ac.jp"
+__copyright__ = "Copyright 2025, National Institute of Informatics"
+
 def dataio_prepare(hparams):
     data_folder = hparams["data_folder"]
     # Load datasets and replace the placeholder '$ROOT' to the actual dataset path
@@ -29,8 +34,7 @@ def dataio_prepare(hparams):
 
     # === Dataloader behaviour for TRAIN and VALID data ===
     # Step[1]: Define which column should be readed from the .csv protocol
-    @sb.utils.data_pipeline.takes("Path", "Label", \
-                                  "SampleRate", "AudioChannel")
+    @sb.utils.data_pipeline.takes("Path", "Label", "SampleRate", "AudioChannel")
     # Step[2]: Define which value should be returned by data loading pipeline
     # If you want to do extra processing and return something new,
     # you need to 1st: add a new column to @data_pipeline.takes (for exalmple, "Duration"),
@@ -56,8 +60,10 @@ def dataio_prepare(hparams):
         # Threshold is 13 seconds
         if original_len > 13 * int(SampleRate):
             # Get a random but shorter length between 10s and 13s
-            segment_length = random.randint(10 * int(SampleRate), \
-                                            13 * int(SampleRate))
+            segment_length = random.randint(
+                10 * int(SampleRate), 
+                13 * int(SampleRate)
+            )
             # Find the max start point where a segment_length can be cutted
             # i.e., to cut a 13s segment from a 16.1s audio, max_start will be 3.1s
             max_start = original_len - segment_length
@@ -137,9 +143,6 @@ def dataio_prepare(hparams):
     # Using DynamicBatch Sampler for training data, batch size is not fixed during training,
     # and each mini-batch will contain audios with similar length
     # and total duration of each mini-batch will be limited to hparams["max_batch_length"]
-    # For example, when max_batch_length is set to 22 (seconds)
-    # batch-1 will have audios with length [11.1, 9.9]
-    # and batch-2 will have [3.9, 4.1, 3.8, 4.2, 5.3]
     dynamic_hparams = hparams["dynamic_batch_sampler_train"]
     train_sampler = DynamicBatchSampler(
         train_data,
@@ -159,7 +162,7 @@ def dataio_prepare(hparams):
         "num_workers": hparams["num_workers"],
         "pin_memory": True,
     }
-    # We do not need test_loader_kwargs{}, speechbrain will build a test dataloader
-    # with bs=1 and without any padding automatically.
-    return train_data, valid_data, test_data, \
-           train_loader_kwargs, valid_loader_kwargs
+    # We do not need test_loader_kwargs{}, if it is not specified,
+    # speechbrain will build a test dataloader with batch_size=1
+    # and without padding automatically
+    return train_data, valid_data, test_data, train_loader_kwargs, valid_loader_kwargs

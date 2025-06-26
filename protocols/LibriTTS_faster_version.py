@@ -29,7 +29,6 @@ LibriSpeech.csv:
 """
 import os
 import csv
-import torchaudio
 
 try:
     import pandas as pd
