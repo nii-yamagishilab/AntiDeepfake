@@ -26,7 +26,7 @@
 
 The AntiDeepfake project provides a series of powerful foundation models post-trained for deepfake detection. The AntiDeepfake model can be used for feature extraction for deepfake detection in a zero-shot manner, or it may be further fine-tuned and optimized for a specific database or deepfake-related task.
 
-This table below summarizes the Equal Error Rate (EER) performance across multiple evaluation datasets, along with model sizes, to help guide your selection.
+The table below summarizes the Equal Error Rate (EER) performance across multiple evaluation datasets, along with model sizes, to help guide your selection.
 
 For more technical details and analysis, please refer to our paper [Post-training for Deepfake Speech Detection](https://arxiv.org/abs/2506.21090).
 
@@ -55,7 +55,8 @@ For more technical details and analysis, please refer to our paper [Post-trainin
 ## Table of Contents
 - [Try it out](#try-it-out)
 - [Installation](#installation)
-- [Usage](#usage)
+- [Usage demonstration](#usage-demonstration)
+- [Usage in details](#usage)
 - [Attribution and Licenses](#attribution-and-licenses)
 - [Acknowledgments](#acknowledgments)
 
@@ -94,13 +95,65 @@ pip install --editable .
 pip install tensorboard tensorboardX soundfile pandarallel scikit-learn numpy==1.21.2 pandas==1.4.3 scipy==1.7.2
 ```
 
-## Usage
+## Usage demonstration
+
+Here is a demonstration of using an Antifake checkpoint for deepfake detection.
+
+```bash
+# go to an empty project folder 
+
+# create a Data folder and download a toy dataset
+mkdir Data
+cd Data
+wget -O toy_example.tar.gz https://zenodo.org/records/7497769/files/project-04-toy_example.tar.gz
+tar -xzvf toy_example.tar.gz
+cd -
+
+# git clone the code
+git clone https://github.com/nii-yamagishilab/AntiDeepfake.git
+
+# install dependency
+bash AntiDeepfake/install.sh
+
+# download an AntiDeepfake checkpoint
+cd AntiDeepfake
+mkdir downloads
+wget -O downloads/mms_300m.ckpt https://zenodo.org/records/15580543/files/mms_300m.ckpt
+
+# scoring
+conda activate antideepfake
+
+python main.py inference hparams/mms_300m.yaml --base_path $PWD/.. --exp_name eval_antideepfake_mms_300m_toy_example --test_csv protocols/toy_example_test.csv --pretrained_weights '{"detector": "downloads/mms_300m.ckpt"}'
+
+# ...
+# INFO | __main__ | Loading pre-trained weights detector from downloads/mms_300m.ckpt
+# 100%|███████████████████████████████████████████████████████████████████| 150/150 [00:03<00:00, 38.71it/s]
+# Scores saved to ...
+
+# computing metrics
+python evaluation.py ../Log/exps/exp_mms_300m_eval_antideepfake_mms_300m_toy_example/evaluation_score.csv
+
+# ...
+# ===== METRICS SUMMARY =====
+# For accuracy, precision, recall, f1, fpr and fnr, threshold of real class probablity is 0.5
+#
+#        roc_auc  accuracy  precision  recall      f1     fpr     fnr     eer  eer_threshold
+#subset                                                                                     
+#all         0.9935    0.9467     0.6818  0.9375  0.7895  0.0522  0.0625  0.0597   0.259
+#ASV19LAdemo 0.9935    0.9467     0.6818  0.9375  0.7895  0.0522  0.0625  0.0597   0.259
+```
+
+For details on inference, post-training, and fine-tuning, please check the following section.
+
+## Usage in details
 
 ### 0. Working directory structure
-Below is an overview of our working directory structure. This is provided as a reference to help understand how the code and data are organized:
+
+We assume the following project structure. This is provided as a reference to help understand how the code and data are organized:
 
 ```
-/base_path/
+/base_path/                 # The root of the project that contains data,
+│                           # code, and experiment
 │
 ├── Data/                   # Contains multiple databases
 │   ├── ASVspoof2019-LA/    # Example database
@@ -108,15 +161,17 @@ Below is an overview of our working directory structure. This is provided as a r
 │   ├── ...                 # Other databases
 │
 ├── fairseq/                # Directory for fairseq installation
+├── speechbrain/            # Directory for speechbrain installation
 │
 ├── Log/                    # Stores log files and model checkpoints
 │   ├── exps/               # Directory for experiment outputs
 │   ├── ssl-weights/        # Contains downloaded checkpoint files
 │
-├── speechbrain/            # Directory for speechbrain installation
 │
-├── AntiDeepfake/           # This repository
-│   ├── ...                 # Project files
+├── AntiDeepfake/           # This AntiDeepfake repository
+│   ├── hparams             # Configuration files
+│   │   ├── xx.yaml         # 
+│   ├── ...                 # Code files
 │   ├── protocols/
 │   │   ├── xx.py           # python script for generating protocols
 │   │   ├── train.csv       # The generated training set protocol
@@ -125,35 +180,48 @@ Below is an overview of our working directory structure. This is provided as a r
 
 ```
 
+The folder structure can be altered. By doing so, please remember to change the path variables in `hparams/*.yaml`.
+
 ### 1. Generate protocols
 
-Training and inference scripts provided in this repository are designed to load audio files listed in train/valid/test CSV protocol files. Python scripts for generating these protocols are provided in `protocols/`. Each script is named after the database it processes. 
+Training and inference scripts provided in this repository are designed to load audio files listed in train/valid/test CSV protocol files.
+
+In the demonstration above, we used `protocols/toy_example_test.csv` to do inference. You can check the content of this CSV file.
+
+Python scripts for generating these protocols are provided in `protocols`. Each script is named after the database it processes. 
 
 All protocols are designed to follow the same format so we can easily shuffle, split, or merge them. To merge multiple CSV protocols as in our experiment, you can refer to `generate_protocol_by_proportion.py`.
 
 To generate protocols for your own data:
 
+- refer to `toy_example.py` and the downloaded toy_example.tar.gz for example.
 - refer to `ASVspoof2019-LA.py` if you have a protocol file with ground truth labels for each audio file.
 - refer to `CVoiceFake.py` if your real and fake audios are stored separately.
 - refer to `WildSVDD.py` if your audio filenames indicate whether they are real or fake.
 
 ### 2. Download checkpoints
 
-Our training script initializes SSL front-end with random weights and attempts to replace those weights with checkpoints in your `/base_path/Log/ssl-weights/`.
+Our code creates the models using configuration files. Their front ends are initialized with random weights.
+
+* If you do inference without post-training or fine-tuning, please download an AntiDeepfake checkpoint (see example in Usage Demonstration above). The weights of the front end and the rest of the model will be overwritten using the AntiDeepfake checkpoint.
+
+* If you do post-training or fine-tuning upon an AntiDeepfake checkpoint, please download the AntiDeepfake checkpoint. The weights of the front end and the rest of the model will be overwritten using the AntiDeepfake checkpoint.
+
+* If you want to do your own post-training using Fairseq pre-trained SSL front ends, please download Fairseq checkpoints. The weights of the front will be re-initialized using the Fairseq checkpoint.
 
 
 | Model           | Download Link                 |
 | --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **AntiDeepfake**      | [Zenodo](https://zenodo.org/records/15580543) and [Hugging Face](https://huggingface.co/collections/nii-yamagishilab/antideepfake-685a1788fc514998e841cdfc) |
 | **Fairseq MMS**         | Pretrained models from [here](https://github.com/facebookresearch/fairseq/tree/main/examples/mms#pretrained-models)                                                                      |
 | **Fairseq XLS-R**       | Model link from [here](https://github.com/facebookresearch/fairseq/blob/main/examples/wav2vec/xlsr/README.md#xls-r)                                                          |
 | **Fairseq Wav2Vec 2.0** | Base (no finetuning) and Large (LV-60 + CV + SWBD + FSH), no finetuning, from [here](https://github.com/facebookresearch/fairseq/tree/main/examples/wav2vec#pre-trained-models)                |
 | **Fairseq HuBERT**      | Extra Large (\~1B params), trained on Libri-Light 60k hrs, no finetuning, from [here](https://github.com/facebookresearch/fairseq/tree/main/examples/wav2vec#pre-trained-models) |
-| **AntiDeepfake**      | [Zenodo](https://zenodo.org/records/15580543) and [Hugging Face](https://huggingface.co/collections/nii-yamagishilab/antideepfake-685a1788fc514998e841cdfc) |
 
 
-### 3. Train
+### 3. Training
 
-To train with AntiDeepfake MMS-300M checkpoint:
+To post-train or fine-tune upon an AntiDeepfake checkpoint (e.g., MMS-300M):
 ```
 python main.py hparams/mms_300m.yaml \
     --base_path /your/base_path \
@@ -167,7 +235,7 @@ python main.py hparams/mms_300m.yaml \
     --pretrained_weights '{"detector": "/path/to/your/downloaded/antideepfake/mms_300m.ckpt"}'
 ```
 
-To train with Fairseq MMS-300M checkpoint:
+To start post-train with a Fairseq checkpoint (e.g., MMS-300M):
 ```
 python main.py hparams/mms_300m.yaml \
     --base_path /your/base_path \
@@ -180,17 +248,20 @@ python main.py hparams/mms_300m.yaml \
     --pretrained_weights '{"detector": "/base_path/Log/ssl-weights/base_300m.pt"}'
 ```
 
-Configuration YAML files are named after the model they correspond to. Training logs and checkpoints will be saved under `/base_path/Log/exps/exp_mms_300m_<exp_name>`. If this exp folder already exists, the script will try to resume training from the last saved checkpoint. 
-
-For multi-GPU training, please use:
-```
+Notes:
+1. Configuration YAML files are named after the model they correspond to. Please use the corresponding configuration file in `hparams`.
+2. Training logs and checkpoints will be saved under `/base_path/Log/exps/exp_mms_300m_<exp_name>`.
+3. If the above `exp` folder already exists, the script will try to resume training from the last saved checkpoint in the folder 
+4. For multi-GPU training, please use:
+```bash
 torchrun --nnodes=1 --nproc-per-node=<NUM_GPU> main.py hparams/<MODEL>.yaml
 ```
-### 4. Performance evaluation
 
-#### Generate CSV score
+### 4. Inference and evaluation
 
-To evaluate using the best validation checkpoint from your own experiment:
+#### Inference (generating CSV score)
+
+For using the best validation checkpoint from your own experiment:
 ```
 python main.py inference hparams/mms_300m.yaml \
     --base_path /your/base_path \
@@ -200,7 +271,7 @@ python main.py inference hparams/mms_300m.yaml \
 The script will automatically search for the best validation checkpoint in the specified experiment folder `/base_path/Log/exps/exp_mms_300m_<exp_name>`. An `evaluation_score.csv` file will be saved in the same folder.
 
 
-To evaluate with AntiDeepfake checkpoints without training:
+For using AntiDeepfake checkpoints without training:
 ```
 python main.py inference hparams/mms_300m.yaml \
     --base_path /your/base_path \
@@ -210,30 +281,33 @@ python main.py inference hparams/mms_300m.yaml \
     --pretrained_weights '{"detector": "/path/to/your/downloaded/antideepfake/mms_300m.ckpt"}'
 ```
 
-#### Evaluate CSV score
+#### Evaluating CSV score
 Run:
 ```
 python evaluation.py /path/to/your/evaluation_score.csv
 ```
 You will get results similar to this:
 ```
-No data for ID_PREFIX_1
-No data for ID_PREFIX_2
-
 ===== METRICS SUMMARY =====
 For accuracy, precision, recall, f1, fpr and fnr, threshold of real class probablity is 0.5
 
         roc_auc  accuracy  precision  recall      f1     fpr     fnr     eer  eer_threshold
 subset                                                                                     
-all       0.951    0.8879     0.9421  0.8823  0.9112  0.1016  0.1177  0.1079         0.4114
+all         0.9935    0.9467     0.6818  0.9375  0.7895  0.0522  0.0625  0.0597          0.259
+ASV19LAdemo 0.9935    0.9467     0.6818  0.9375  0.7895  0.0522  0.0625  0.0597          0.259
+...
 ```
-Results are shown for each subset and also the full set listed in your protocol.
 
-The message "No data for ID_PREFIX\_1" means no audio IDs in your protocol start with `ID_PREFIX_1`. Each ID should begin with a dataset-specific `ID_PREFIX`, set during its protocol generation. Audio files with same `ID_PREFIX` are treated as one subset.
+The row `all` show results computed over all the scores in the file. 
+The rows below `all` list the results for each subset in the file, where the subset is identified by the file ID prefix (e.g., ASV19LAdemo in Usage demonstration).
 
-## Our fine-tuning results
+# Our fine-tuning results
 
-Below is our evaluation EER performance of fine-tuning AntiDeepfake models on Deepfake-Eval-2024 train set (PT = Pre-training, PST = Post-training, FT = Fine-tuning, 4s = Input Duration is 4 seconds). Please note that we do not provide these fine-tuned checkpoints, as they would double the required storage.
+The released AntiDeepfake checkpoints are post-trained checkpoints. They can be fine-tuned to a specific task in a specific domain.
+
+Described below is the performance of fine-tuning AntiDeepfake models on Deepfake-Eval-2024 train set (PT = Pre-training, PST = Post-training, FT = Fine-tuning, 4s = Input Duration is 4 seconds).
+
+Please note that we do not provide these fine-tuned checkpoints.
 
 | Model ID     | PT+PST+FT 4s | PT+PST+FT 10s | PT+PST+FT 13s | PT+PST+FT 30s | PT+PST+FT 50s | PT+FT 4s | PT+FT 10s | PT+FT 13s | PT+FT 30s | PT+FT 50s |
 |--------------|--------------|---------------|---------------|---------------|---------------|----------|-----------|-----------|-----------|-----------|

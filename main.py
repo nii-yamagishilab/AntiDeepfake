@@ -370,6 +370,7 @@ class SSLBrain(sb.core.Brain):
             dataset, sb.Stage.TEST, **loader_kwargs
         )
         # Load the best model based on the given key
+        # (if available)
         self.on_evaluate_start(min_key=min_key)
 
         self.modules.eval()
@@ -378,7 +379,7 @@ class SSLBrain(sb.core.Brain):
         score_preds = sb.utils.metric_stats.BinaryMetricStats()
 
         with torch.no_grad():
-            for batch in dataset:
+            for batch in tqdm(dataset):
                 preds = self.compute_forward(batch, stage=sb.Stage.TEST)
                 score_preds.append(
                     ids=batch["id"],
