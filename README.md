@@ -155,21 +155,27 @@ If you wish to continue fine-tuning with our checkpoints, simply modify the defa
 
 ### 3. Train
 
-To train the MMS-300M model:
-
+To train with Fairseq MMS-300M checkpoint:
 ```
 python main.py hparams/mms_300m.yaml \
     --base_path /your/base_path \
-    --exp_name my_job \
-    --lr 1e-6 \
+    --exp_name post_training \
+    --lr 1e-7 \
     # Perform full validation every 2025 mini-batches
     --valid_step 2025 \
     # Enable RawBoost data augmentation
     --use_da True \
+```
+
+To train with AntiDeepfake MMS-300M checkpoint:
+```
+python main.py hparams/mms_300m.yaml \
+    --base_path /your/base_path \
+    --exp_name fine_tuning \
     # Initialize model weights with AntiDeepfake checkpoint
     --pretrained_weights '{"detector": "/path/to/your/downloaded/antideepfake/mms_300m.ckpt"}'
 ```
-Configuration YAML files are named after the model they correspond to. Training logs and checkpoints will be saved under `/base_path/Log/exps/exp_mms_300m_my_job`. If this exp folder already exists, the script will try to resume training from the last saved checkpoint. Evaluation results with the best validation model will be stored in the same folder with name `evaluation_score.csv`.
+Configuration YAML files are named after the model they correspond to. Training logs and checkpoints will be saved under `/base_path/Log/exps/exp_mms_300m_<exp_name>`. If this exp folder already exists, the script will try to resume training from the last saved checkpoint. 
 
 For multi-GPU training, please use:
 ```
@@ -177,10 +183,15 @@ torchrun --nnodes=1 --nproc-per-node=<NUM_GPU> main.py hparams/<MODEL>.yaml
 ```
 ### 4. Performance evaluation
 
-#### With CSV score
+#### Generate CSV score
+By default, evaluation results using the best validation checkpoint are saved as `evaluation_score.csv` in the experiment folder after training completes. 
+
+Alternatively, you can run `test.py` to generate scores from any model checkpoint or to evaluate on datasets not included in your original test protocol. Refer to the script's inline comments for detailed usage instructions.
+
+#### Evaluate CSV score
 Run:
 ```
-python evaluation.py /base_path/Log/exps/exp_mms_300m_my_job/evaluation_score.csv
+python evaluation.py /path/to/your/evaluation_score.csv
 ```
 You will get results similar to this:
 ```
@@ -188,6 +199,8 @@ No data for ID_PREFIX_1
 No data for ID_PREFIX_2
 
 ===== METRICS SUMMARY =====
+For accuracy, precision, recall, f1, fpr and fnr, threshold of real class probablity is 0.5
+
         roc_auc  accuracy  precision  recall      f1     fpr     fnr     eer  eer_threshold
 subset                                                                                     
 all       0.951    0.8879     0.9421  0.8823  0.9112  0.1016  0.1177  0.1079         0.4114
@@ -195,10 +208,6 @@ all       0.951    0.8879     0.9421  0.8823  0.9112  0.1016  0.1177  0.1079    
 Results are shown for each subset and also the full set listed in your protocol.
 
 The message "No data for ID_PREFIX\_1" means no audio IDs in your protocol start with `ID_PREFIX_1`. Each ID should begin with a dataset-specific `ID_PREFIX`, set during its protocol generation. Audio files with same `ID_PREFIX` are treated as one subset.
-
-#### Generate CSV score
-You can use `test.py` for standalone score generation with any model checkpoint, or to evaluate data that is not included in your test protocol. Please refer to its comments for detailed usage instructions.
-
 
 ## Our fine-tuning results
 
