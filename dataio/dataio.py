@@ -17,8 +17,9 @@ __email__ = "gewanying@nii.ac.jp, wangxin@nii.ac.jp"
 __copyright__ = "Copyright 2025, National Institute of Informatics"
 
 def dataio_prepare(hparams):
+    # by default, all datasets are saved at base_path/Data
     data_folder = hparams["data_folder"]
-    # Load datasets and replace the placeholder '$ROOT' to the actual dataset path
+    # Load datasets and replace the placeholder '$ROOT' to the actual data folder path
     train_data = sb.dataio.dataset.DynamicItemDataset.from_csv(
         csv_path=hparams["train_csv"],
         replacements={"ROOT": data_folder},

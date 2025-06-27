@@ -12,7 +12,8 @@ in most machines. It looks like this:
 /my/base_path/Data/MLS/mls_dutch/train/audio/5764/4370/5764_4370_000049.flac
 /my/base_path/Data/MLS/mls_dutch/train/audio/5764/4370/5764_4370_000001.flac
 
-Now, we can skip scanning the whole MLS folder with python os.walk().
+Now, we can skip scanning the whole MLS folder with python os.walk(),
+and use parallel_apply() to speed up.
 You are encouraged to apply similar modifications for generating protocols for 
 other large datasets, such as VoxCeleb or your own vocoded datasets.
 

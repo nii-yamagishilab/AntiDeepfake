@@ -12,7 +12,8 @@ in most machines. It looks like this:
 /my/base_path/Data/LibriTTS/dev-clean/84/121123/84_121123_000036_000000.wav
 /my/base_path/Data/LibriTTS/dev-clean/84/121123/84_121123_000069_000000.wav
 
-Now, we can skip scanning the whole LibriTTS folder with python os.walk().
+Now, we can skip scanning the whole LibriTTS folder with python os.walk(),
+and use parallel_apply() to speed up.
 You are encouraged to apply similar modifications for generating protocols for 
 other large datasets, such as VoxCeleb or your own vocoded datasets.
 

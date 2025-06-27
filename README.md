@@ -13,7 +13,7 @@
   <a href="https://github.com/nii-yamagishilab/AntiDeepfake/blob/main/LICENSE-CHECKPOINT"><img alt="Model License"
     src="https://img.shields.io/badge/Checkpoint_License-CC BY%20NC%20SA 4.0-f5de53?&color=f5de53"/></a>
 <a href="https://zenodo.org/records/15580543">
-  <img alt="Zenodo" src="https://img.shields.io/badge/%20Zenodo-Pretrained%20Checkpoints-0077C8?logo=zenodo&logoColor=white" />
+  <img alt="Zenodo" src="https://img.shields.io/badge/%20Zenodo-Checkpoints-0077C8?logo=zenodo&logoColor=white" />
 </a>
 
   <br>
@@ -126,9 +126,7 @@ Below is an overview of our working directory structure. This is provided as a r
 ```
 ### 1. Download Fairseq checkpoints
 
-Our training script initializes SSL front-end with random weights and, by default, replaces them with the corresponding pretrained Fairseq checkpoints. Please download the pretrained SSL checkpoints from Fairseq GitHub repo to your `/base_path/Log/ssl-weights/`.
-
-To [fine-tune](#5-further-fine-tuning) our AntiDeepfake checkpoints, simply replace the initialized weights with those from our checkpoint files.
+Our training script initializes SSL front-end with random weights and, by default, replaces them with the corresponding pretrained Fairseq checkpoints. Please download the pretrained checkpoints from Fairseq GitHub repo to your `/base_path/Log/ssl-weights/`.
 
 | Model           | Download Link                                                                                                                                                 |
 | --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -166,7 +164,7 @@ Configuration YAML files are named after the model they correspond to. Training 
 
 For multi-GPU training, please use:
 ```
-torchrun --nnodes=1 --nproc-per-node=NUM_GPU main.py hparams/<MODEL>.yaml
+torchrun --nnodes=1 --nproc-per-node=<NUM_GPU> main.py hparams/<MODEL>.yaml
 ```
 ### 4. Performance evaluation
 
@@ -190,12 +188,12 @@ Results are shown for each subset and also the full set listed in your protocol.
 The message "No data for ID_PREFIX\_1" means no audio IDs in your protocol start with `ID_PREFIX_1`. Each ID should begin with a dataset-specific `ID_PREFIX`, set during its protocol generation. Audio files with same `ID_PREFIX` are treated as one subset.
 
 #### Generate CSV score
-You can use `test.py` for standalone score generation with any model checkpoint, or to evaluate on data not included in your test protocol. Please refer to its docstring for detailed usage instructions.
+You can use `test.py` for standalone score generation with any model checkpoint, or to evaluate data that is not included in your test protocol. Please refer to its comments for detailed usage instructions.
 
 
 ### 5. Further fine-tuning
 
-We provide our AntiDeepfake .ckpt checkpoints on [Zenodo](https://zenodo.org/records/15580543) as well as in .safetensors format on [Hugging Face](https://huggingface.co/collections/nii-yamagishilab/antideepfake-685a1788fc514998e841cdfc). To continue fine-tuning with these checkpoints, please use the same training script from Step 3 add `--pretrained_weights '{"detector": "/path/to/your/downloaded/antideepfake/mms_300m.ckpt"}'`
+We provide our AntiDeepfake .ckpt checkpoints on [Zenodo](https://zenodo.org/records/15580543) as well as in .safetensors format on [Hugging Face](https://huggingface.co/collections/nii-yamagishilab/antideepfake-685a1788fc514998e841cdfc). To continue fine-tuning with these checkpoints, please use the same training script from Step 3 and add `--pretrained_weights '{"detector": "/path/to/your/downloaded/antideepfake/mms_300m.ckpt"}'`
 
 Fine-tuning will follow a similar process to training a new model, except that SSL weights will be replaced as AntiDeepfake checkpoints.
 
@@ -221,13 +219,13 @@ It is also partially supported by the following grants from the Japan Science an
 - AIP Acceleration Research (Grant No. JPMJCR24U3)
 - PRESTO (Grant No. JPMJPR23P9)
 
-This study was carried out using the TSUBAME4.0 supercomputer at Institute of Science Tokyo.
+This study was carried out using the TSUBAME4.0 supercomputer at the Institute of Science Tokyo.
 
 Codes are based on the implementations of [wav2vec 2.0 pretraining with SpeechBrain](https://github.com/speechbrain/speechbrain/tree/develop/recipes/LibriSpeech/self-supervised-learning/wav2vec2) and [project-NN-Pytorch-scripts](https://github.com/nii-yamagishilab/project-NN-Pytorch-scripts).
 ## **Citation**
 If you find this repository useful, please consider citing:
 ```
-@misc{antideepfake_2025,
+@article{antideepfake_2025,
       title={Post-training for Deepfake Speech Detection}, 
       author={Wanying Ge, Xin Wang, Xuechen Liu, Junichi Yamagishi},
       year={2025},

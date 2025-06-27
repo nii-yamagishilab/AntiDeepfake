@@ -14,7 +14,6 @@ and no real audios in this database
 
 DiffusionDeepfake.csv:
 """
-
 import os
 import sys
 import csv

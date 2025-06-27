@@ -15,16 +15,17 @@ __email__ = "gewanying@nii.ac.jp, wangxin@nii.ac.jp"
 __copyright__ = "Copyright 2025, National Institute of Informatics"
 
 def load_weights(trg_state, path, func_name_change=lambda x: x):
-    """load_weights(trg_state, path)
-    Load trained weights to the state_dict() of a torch.module on CPU
+    """Load trained weights to the state_dict() of a torch.module on CPU
     """
     # load to CPU
     loaded_state = torch.load(
         path, 
         map_location=lambda storage, loc: storage,
+        # set to False for loading fariseq pt models: w2v_small, w2v_large, hubert_xl
         weights_only=False,
     )
 
+    # if it is a fairseq-style checkpoint
     if 'model' in loaded_state:
         loaded_state = loaded_state['model']
 

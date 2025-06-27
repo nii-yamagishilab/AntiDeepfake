@@ -1,5 +1,4 @@
-"""
-This script generates prediction scores from a specific model on a specified dataset,
+"""This script generates prediction scores from a specific model on a specified dataset,
 without using `main.py evaluate()`.
 
 Usage:

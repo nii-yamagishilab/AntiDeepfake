@@ -1,5 +1,12 @@
 """This script procides a collection of functions used for RawBoost data augmentation.
-All reproduced based on https://github.com/TakHemlata/RawBoost-antispoofing 
+
+All reproduced from https://github.com/TakHemlata/RawBoost-antispoofing 
+
+Reference
+[1] Hemlata Tak, Madhu Kamble, Jose Patino, Massimiliano Todisco, Nicholas Evans.
+    Rawboost: A raw data boosting and augmentation method applied to automatic speaker 
+verification anti-spoofing
+    in Proc. ICASSP 2022.
 """
 import copy
 import random
@@ -8,7 +15,8 @@ import torch
 import numpy as np
 from scipy import signal
 
-### Algorithms used for RawBoost ###
+
+### Algorithms used by RawBoost ###
 def randRange(x1, x2, integer):
     y = np.random.uniform(low=x1, high=x2, size=(1,))
     if integer:
@@ -21,7 +29,6 @@ def normWav(x,always):
     elif np.amax(abs(x)) > 1:
             x = x/np.amax(abs(x))
     return x
-
 
 def genNotchCoeffs(nBands,minF,maxF,minBW,maxBW,minCoeff,maxCoeff,minG,maxG,fs):
     b = 1
@@ -45,14 +52,12 @@ def genNotchCoeffs(nBands,minF,maxF,minBW,maxBW,minCoeff,maxCoeff,minG,maxG,fs):
     b = pow(10, G/20)*b/np.amax(abs(h))   
     return b
 
-
 def filterFIR(x,b):
     N = b.shape[0] + 1
     xpad = np.pad(x, (0, N), 'constant')
     y = signal.lfilter(b, 1, xpad)
     y = y[int(N/2):int(y.shape[0]-N/2)]
     return y
-
 
 # Linear and non-linear convolutive noise
 def LnL_convolutive_noise(x,N_f,nBands,minF,maxF,minBW,maxBW,minCoeff,maxCoeff,minG,maxG,minBiasLinNonLin,maxBiasLinNonLin,fs):
@@ -66,7 +71,6 @@ def LnL_convolutive_noise(x,N_f,nBands,minF,maxF,minBW,maxBW,minCoeff,maxCoeff,m
     y = y - np.mean(y)
     y = normWav(y,0)
     return y
-
 
 # Impulsive signal dependent noise
 def ISD_additive_noise(x, P, g_sd):
@@ -83,7 +87,6 @@ def ISD_additive_noise(x, P, g_sd):
     y = normWav(y,0)
     return y
 
-
 # Stationary signal independent noise
 def SSI_additive_noise(x,SNRmin,SNRmax,nBands,minF,maxF,minBW,maxBW,minCoeff,maxCoeff,minG,maxG,fs):
     noise = np.random.normal(0, 1, x.shape[0])
@@ -94,7 +97,6 @@ def SSI_additive_noise(x,SNRmin,SNRmax,nBands,minF,maxF,minBW,maxBW,minCoeff,max
     noise = noise / np.linalg.norm(noise,2) * np.linalg.norm(x,2) / 10.0**(0.05 * SNR)
     x = x + noise
     return x
-
 
 ### Actual RawBoost data augmentation function ###
 def process_Rawboost_feature(feature, sr, args, algo):

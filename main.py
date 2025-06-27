@@ -47,11 +47,11 @@ class SSLBrain(sb.core.Brain):
         return
 
     def _init_model(self):
-        """ _init_model()
-        Load pre-trained weights
+        """Load pre-trained weights
 
-        This is done before loading the checkpoint, after loading the initial
-        fairseq model
+        This is done after randomly initializing all modules.
+        Load pre-trained weights from `hparams.pretrained_weights`, 
+        matching layers will be replaced with the corresponding weights
         """
         # iterate over all modules specified in yaml
         for key in self.hparams.pretrained_weights.keys():
@@ -62,6 +62,7 @@ class SSLBrain(sb.core.Brain):
                 logger.info("Loading pre-trained weights {:s} from {:s}".format(
                     key, str(pretrained_path))
                 )
+                # used for loading fairseq-style checkpoints
                 def name_mapper(n): return f"m_ssl.model.{n}"
                 # load pre-trained model for specific module
                 load_weights(
@@ -244,7 +245,7 @@ class SSLBrain(sb.core.Brain):
         return
     
     def fit_batch(self, batch):
-        """ compute_forward();compute_objectives();optimizers_step()
+        """compute_forward();compute_objectives();optimizers_step()
         """
         should_step = (self.step % self.grad_accumulation_factor) == 0
         
@@ -315,14 +316,16 @@ class SSLBrain(sb.core.Brain):
         return objectives["backprop_loss"].detach().cpu()
 
     def on_stage_start(self, stage, epoch):
-        """Gets called at the beginning of each epoch"""
+        """Gets called at the beginning of each epoch
+        """
         if stage != sb.Stage.TRAIN:
             self.error_metrics = self.hparams.error_stats()
             if stage == sb.Stage.VALID:
                 self.valid_epoch_loss = 0.0
 
     def on_stage_end(self, stage, stage_loss, epoch=None):
-        """Gets called at the end of each epoch"""
+        """Gets called at the end of each epoch
+        """
         stage_stats = {"loss": stage_loss}
         # Only record loss during training
         if stage == sb.Stage.TRAIN:
@@ -360,7 +363,7 @@ class SSLBrain(sb.core.Brain):
             )
 
     def evaluate(self, dataset, min_key, loader_kwargs={}):
-        """Called for final evaluation and saving score .csv file
+        """Gets called at test stage, perform final evaluation and save score.csv
         """
         loader_kwargs["ckpt_prefix"] = None
         dataset = self.make_dataloader(
@@ -404,7 +407,7 @@ def main():
     with open(hparams_file, encoding="utf-8") as fin:
         hparams = load_hyperpyyaml(fin, overrides)
     hparams.update(run_opts)
-    # set arndom seed
+    # set random seed
     set_random_seed(hparams["seed"])
     # Update precision to bf16 if the device is CPU and precision is fp16
     if run_opts.get("device") == "cpu" and hparams.get("precision") == "fp16":

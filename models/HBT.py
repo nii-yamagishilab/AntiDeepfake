@@ -36,7 +36,7 @@ class SSLModel(torch.nn.Module):
     def __init__(self, model_name):
         """ SSLModel(model_name)
         Args:
-          model_name: string, path to global configurations to get model specific config
+          model_name: string, pass to global configurations to get model specific config
         """
         super(SSLModel, self).__init__()
         # model-specific config 
@@ -79,7 +79,7 @@ class SSLModel(torch.nn.Module):
 class Model(torch.nn.Module):
     """ Model definition
     Args:
-      model_name: string, path to global configurations to get model specific config
+      model_name: string, pass to global configurations to get model specific config
     """
     def __init__(self, model_name):
         super(Model, self).__init__()
@@ -95,7 +95,7 @@ class Model(torch.nn.Module):
             output_size=1
         )
         self.proj_fc = torch.nn.Linear(
-            in_features=global_input_dims[model_name] ,
+            in_features=self.m_ssl.out_dim,
             out_features=self.v_out_class,
         )
         
