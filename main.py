@@ -19,7 +19,7 @@ import speechbrain as sb
 from speechbrain.utils.logger import get_logger
 from speechbrain.dataio.dataloader import LoopedLoader
 
-from dataio.dataio import dataio_prepare
+from dataio.dataio import dataio_prepare, dataio_prepare_test
 from utils import load_weights, set_random_seed
 
 
@@ -400,64 +400,99 @@ def main():
     ######
     # initialization
     ######
-    hparams_file, run_opts, overrides = sb.parse_arguments(sys.argv[1:])
+
+    arg1 = sys.argv[1]
+    # switching mode
+    if arg1 == "inference":
+        # inference mode
+        working_mode = 'inference'
+        hparams_file, run_opts, overrides = sb.parse_arguments(sys.argv[2:])
+    else:
+        # training mode
+        working_mode = 'training'
+        hparams_file, run_opts, overrides = sb.parse_arguments(sys.argv[1:])
+    print(f"----- {working_mode} start -----\n")
+
     run_opts["find_unused_parameters"] = True
     sb.utils.distributed.ddp_init_group(run_opts)
+
     # load configuration file
     with open(hparams_file, encoding="utf-8") as fin:
         hparams = load_hyperpyyaml(fin, overrides)
     hparams.update(run_opts)
+
     # set random seed
     set_random_seed(hparams["seed"])
+
     # Update precision to bf16 if the device is CPU and precision is fp16
     if run_opts.get("device") == "cpu" and hparams.get("precision") == "fp16":
         hparams["precision"] = "bf16"
 
     ######
-    # prepare experiment
+    # main functions
     ######
-    sb.create_experiment_directory(
-        experiment_directory=hparams["output_folder"],
-        hyperparams_to_save=hparams_file,
-        overrides=overrides,
-    )
+    # if training is needed
+    if working_mode == 'training':
+        ######
+        # prepare experiment
+        ######
+        sb.create_experiment_directory(
+            experiment_directory=hparams["output_folder"],
+            hyperparams_to_save=hparams_file,
+            overrides=overrides,
+        )
 
-    ######
-    # prepare dataset
-    ######
-    train_data, valid_data, test_data,\
-    train_loader_kwargs, valid_loader_kwargs = dataio_prepare(hparams)
+        ######
+        # prepare train and valid datasets
+        ######
+        train_data, valid_data,\
+        train_loader_kwargs, valid_loader_kwargs = dataio_prepare(hparams)
 
-    ######
-    # prepare SSLBrain class
-    ######
-    brain = SSLBrain(
-        modules=hparams["modules"],
-        opt_class=hparams["optimizer"],
-        hparams=hparams,
-        run_opts=run_opts,
-        checkpointer=hparams["checkpointer"],
-    )
+        ######
+        # prepare SSLBrain class
+        ######
+        brain = SSLBrain(
+            modules=hparams["modules"],
+            opt_class=hparams["optimizer"],
+            hparams=hparams,
+            run_opts=run_opts,
+            checkpointer=hparams["checkpointer"],
+        )
 
-    ######
-    # trainig start
-    ###### 
-    brain.fit(
-        brain.hparams.epoch_counter,
-        train_data,
-        valid_data,
-        train_loader_kwargs=train_loader_kwargs,
-        valid_loader_kwargs=valid_loader_kwargs,
-        progressbar=True,
-    )
+        ######
+        # trainig start
+        ###### 
+        brain.fit(
+            brain.hparams.epoch_counter,
+            train_data,
+            valid_data,
+            train_loader_kwargs=train_loader_kwargs,
+            valid_loader_kwargs=valid_loader_kwargs,
+            progressbar=True,
+        )
 
-    ######
-    # evaluation start
-    ######
-    brain.evaluate(
-        test_data,
-        min_key="EqualErrorRate",
-    )
+    elif working_mode == 'inference':
+        ######
+        # prepare test data
+        ######
+        test_data = dataio_prepare_test(hparams)
+
+        ######
+        # initialize model
+        ######
+        brain = SSLBrain(
+            modules=hparams["modules"],
+            opt_class=hparams["optimizer"],
+            hparams=hparams,
+            run_opts=run_opts,
+            checkpointer=hparams["checkpointer"],
+        )
+
+        ######
+        # load best validation model and run inference
+        ######
+        brain.evaluate(test_data, min_key="EqualErrorRate")
+
     return
 
 if __name__ == "__main__":

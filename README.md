@@ -111,7 +111,7 @@ Below is an overview of our working directory structure. This is provided as a r
 │
 ├── Log/                    # Stores log files and model checkpoints
 │   ├── exps/               # Directory for experiment outputs
-│   ├── ssl-weights/        # Contains downloaded fairseq SSL checkpoint files (ssl.pt)
+│   ├── ssl-weights/        # Contains downloaded checkpoint files
 │
 ├── speechbrain/            # Directory for speechbrain installation
 │
@@ -139,9 +139,7 @@ To generate protocols for your own data:
 
 ### 2. Download checkpoints
 
-Our training script initializes SSL front-end with random weights and, by default, replaces them with the corresponding pretrained Fairseq checkpoints saved in your `/base_path/Log/ssl-weights/`.
-
-If you wish to continue fine-tuning with our checkpoints, simply modify the default checkpoint path to your downloaded AntiDeepfake checkpoints.
+Our training script initializes SSL front-end with random weights and attempts to replace those weights with checkpoints in your `/base_path/Log/ssl-weights/`.
 
 
 | Model           | Download Link                 |
@@ -155,26 +153,33 @@ If you wish to continue fine-tuning with our checkpoints, simply modify the defa
 
 ### 3. Train
 
+To train with AntiDeepfake MMS-300M checkpoint:
+```
+python main.py hparams/mms_300m.yaml \
+    --base_path /your/base_path \
+    --exp_name fine_tuning \
+    --lr 1e-6 \
+    # Perform full validation every 2025 mini-batches
+    --valid_step 2025 \
+    # Enable RawBoost data augmentation
+    --use_da True \
+    # Initialize model weights with AntiDeepfake checkpoint
+    --pretrained_weights '{"detector": "/path/to/your/downloaded/antideepfake/mms_300m.ckpt"}'
+```
+
 To train with Fairseq MMS-300M checkpoint:
 ```
 python main.py hparams/mms_300m.yaml \
     --base_path /your/base_path \
     --exp_name post_training \
     --lr 1e-7 \
-    # Perform full validation every 2025 mini-batches
-    --valid_step 2025 \
-    # Enable RawBoost data augmentation
-    --use_da True \
+    --valid_step 100000 \
+    # Disable RawBoost data augmentation
+    --use_da False \
+    # Initialize model weights with Fairseq checkpoint (default setting)
+    --pretrained_weights '{"detector": "/base_path/Log/ssl-weights/base_300m.pt"}'
 ```
 
-To train with AntiDeepfake MMS-300M checkpoint:
-```
-python main.py hparams/mms_300m.yaml \
-    --base_path /your/base_path \
-    --exp_name fine_tuning \
-    # Initialize model weights with AntiDeepfake checkpoint
-    --pretrained_weights '{"detector": "/path/to/your/downloaded/antideepfake/mms_300m.ckpt"}'
-```
 Configuration YAML files are named after the model they correspond to. Training logs and checkpoints will be saved under `/base_path/Log/exps/exp_mms_300m_<exp_name>`. If this exp folder already exists, the script will try to resume training from the last saved checkpoint. 
 
 For multi-GPU training, please use:
@@ -184,9 +189,26 @@ torchrun --nnodes=1 --nproc-per-node=<NUM_GPU> main.py hparams/<MODEL>.yaml
 ### 4. Performance evaluation
 
 #### Generate CSV score
-By default, evaluation results using the best validation checkpoint are saved as `evaluation_score.csv` in the experiment folder after training completes. 
 
-Alternatively, you can run `test.py` to generate scores from any model checkpoint or to evaluate on datasets not included in your original test protocol. Refer to the script's inline comments for detailed usage instructions.
+To evaluate using the best validation checkpoint from your own experiment:
+```
+python main.py inference hparams/mms_300m.yaml \
+    --base_path /your/base_path \
+    --exp_name fine_training \  # Must match the name used during training
+    --test_csv /path/to/your/test.csv
+```
+The script will automatically search for the best validation checkpoint in the specified experiment folder `/base_path/Log/exps/exp_mms_300m_<exp_name>`. An `evaluation_score.csv` file will be saved in the same folder.
+
+
+To evaluate with AntiDeepfake checkpoints without training:
+```
+python main.py inference hparams/mms_300m.yaml \
+    --base_path /your/base_path \
+    --exp_name eval_antideepfake_mms_300m \  # Use a new folder name to avoid conflicts
+    --test_csv /path/to/your/test.csv
+    # Initialize model weights with AntiDeepfake checkpoint
+    --pretrained_weights '{"detector": "/path/to/your/downloaded/antideepfake/mms_300m.ckpt"}'
+```
 
 #### Evaluate CSV score
 Run:

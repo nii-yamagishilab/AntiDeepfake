@@ -17,7 +17,8 @@ __email__ = "gewanying@nii.ac.jp, wangxin@nii.ac.jp"
 __copyright__ = "Copyright 2025, National Institute of Informatics"
 
 def dataio_prepare(hparams):
-    # by default, all datasets are saved at base_path/Data
+    """prepare train and valid dataset
+    """
     data_folder = hparams["data_folder"]
     # Load datasets and replace the placeholder '$ROOT' to the actual data folder path
     train_data = sb.dataio.dataset.DynamicItemDataset.from_csv(
@@ -104,6 +105,47 @@ def dataio_prepare(hparams):
             )
         yield logit
 
+    # Desired datasets to use audio_pipeline()
+    sb.dataio.dataset.add_dynamic_item([train_data, valid_data], audio_pipeline)
+    # Desired dataset to return pre-defined keys batch-wisely
+    sb.dataio.dataset.set_output_keys(
+        datasets=[train_data, valid_data],
+        output_keys=["id", "wav", "logit"]
+    ) 
+
+    # Using DynamicBatch Sampler for training data, batch size is not fixed during training,
+    # and each mini-batch will contain audios with similar length
+    # and total duration of each mini-batch will be limited to hparams["max_batch_length"]
+    dynamic_hparams = hparams["dynamic_batch_sampler_train"]
+    train_sampler = DynamicBatchSampler(
+        train_data,
+        length_func=lambda x: float(x["Duration"]),
+        **dynamic_hparams,
+    )
+    train_loader_kwargs = {
+        "batch_sampler": train_sampler,
+        # Pad zeros to shorter audio waveform, to form a fixed length mini-batch
+        "collate_fn": PaddedBatch,
+        "num_workers": hparams["num_workers"],
+        "pin_memory": True,
+    }
+    valid_loader_kwargs = {
+        "batch_size": hparams["valid_dataloader_options"]["batch_size"],
+        "collate_fn": PaddedBatch,
+        "num_workers": hparams["num_workers"],
+        "pin_memory": True,
+    }
+
+    return train_data, valid_data, train_loader_kwargs, valid_loader_kwargs
+
+def dataio_prepare_test(hparams):
+    """prepare test dataset
+    """
+    data_folder = hparams["data_folder"] 
+    test_data = sb.dataio.dataset.DynamicItemDataset.from_csv(
+        csv_path=hparams["test_csv"],
+        replacements={"ROOT": data_folder},
+    )
     # === Dataloader behaviour for TEST data -- no trimming, no augmentation ===
     @sb.utils.data_pipeline.takes("Path", "Label", "SampleRate", "AudioChannel")
     @sb.utils.data_pipeline.provides("wav", "logit")
@@ -130,40 +172,10 @@ def dataio_prepare(hparams):
                 f"Unrecognized label: {Label}, should either be real or fake"
             )
         yield logit
-
-    # Desired datasets to use audio_pipeline()
-    sb.dataio.dataset.add_dynamic_item([train_data, valid_data], audio_pipeline)
-    # Desired dataset to use test_audio_pipeline()
+    
     sb.dataio.dataset.add_dynamic_item([test_data], test_audio_pipeline)
-    # Desired dataset to return pre-defined keys batch-wisely
-    sb.dataio.dataset.set_output_keys(
-        datasets=[train_data, valid_data, test_data],
-        output_keys=["id", "wav", "logit"]
-    ) 
-
-    # Using DynamicBatch Sampler for training data, batch size is not fixed during training,
-    # and each mini-batch will contain audios with similar length
-    # and total duration of each mini-batch will be limited to hparams["max_batch_length"]
-    dynamic_hparams = hparams["dynamic_batch_sampler_train"]
-    train_sampler = DynamicBatchSampler(
-        train_data,
-        length_func=lambda x: float(x["Duration"]),
-        **dynamic_hparams,
-    )
-    train_loader_kwargs = {
-        "batch_sampler": train_sampler,
-        # Pad zeros to shorter audio waveform, to form a fixed length mini-batch
-        "collate_fn": PaddedBatch,
-        "num_workers": hparams["num_workers"],
-        "pin_memory": True,
-    }
-    valid_loader_kwargs = {
-        "batch_size": hparams["valid_dataloader_options"]["batch_size"],
-        "collate_fn": PaddedBatch,
-        "num_workers": hparams["num_workers"],
-        "pin_memory": True,
-    }
+    sb.dataio.dataset.set_output_keys([test_data], ["id", "wav", "logit"]) 
     # We do not need test_loader_kwargs{}, if it is not specified,
     # speechbrain will build a test dataloader with batch_size=1
     # and without padding automatically
-    return train_data, valid_data, test_data, train_loader_kwargs, valid_loader_kwargs
+    return test_data
