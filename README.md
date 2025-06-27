@@ -17,7 +17,7 @@
 </a>
 
   <br>
-  <a href="https://arxiv.org"><b>Paper Link</b></a>
+  <a href="https://arxiv.org/abs/2506.21090"><b>Paper Link</b></a>
 </div>
 
 <hr>
@@ -26,9 +26,9 @@
 
 The AntiDeepfake project provides a series of powerful foundation models post-trained for deepfake detection. The AntiDeepfake model can be used for feature extraction for deepfake detection in a zero-shot manner, or it may be further fine-tuned and optimized for a specific database or deepfake-related task.
 
-This table below summarizes performance across multiple evaluation datasets, along with model sizes, to help guide your selection.
+This table below summarizes the Equal Error Rate (EER) performance across multiple evaluation datasets, along with model sizes, to help guide your selection.
 
-For more technical details and analysis, please refer to our paper [Post-training for Deepfake Speech Detection](paper-link).
+For more technical details and analysis, please refer to our paper [Post-training for Deepfake Speech Detection](https://arxiv.org/abs/2506.21090).
 
 | 🤗 Model                                                                                 | Params | RawBoost | ADD2023 | DEEP-VOICE | FakeOrReal | FakeOrReal-Norm | In-the-Wild | Deepfake-Eval-2024 |
 |------------------------------------------------------------------------------------------|--------|----|---------|-----------|------------|--------------|----------|----------|
@@ -124,19 +124,8 @@ Below is an overview of our working directory structure. This is provided as a r
 │   │   ├── test.csv        # The generated test set protocol
 
 ```
-### 1. Download Fairseq checkpoints
 
-Our training script initializes SSL front-end with random weights and, by default, replaces them with the corresponding pretrained Fairseq checkpoints. Please download the pretrained checkpoints from Fairseq GitHub repo to your `/base_path/Log/ssl-weights/`.
-
-| Model           | Download Link                                                                                                                                                 |
-| --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **MMS**         | Pretrained models from [here](https://github.com/facebookresearch/fairseq/tree/main/examples/mms#pretrained-models)                                                                      |
-| **XLS-R**       | Model link from [here](https://github.com/facebookresearch/fairseq/blob/main/examples/wav2vec/xlsr/README.md#xls-r)                                                          |
-| **Wav2Vec 2.0** | Base (no finetuning) and Large (LV-60 + CV + SWBD + FSH), no finetuning, from [here](https://github.com/facebookresearch/fairseq/tree/main/examples/wav2vec#pre-trained-models)                |
-| **HuBERT**      | Extra Large (\~1B params), trained on Libri-Light 60k hrs, no finetuning, from [here](https://github.com/facebookresearch/fairseq/tree/main/examples/wav2vec#pre-trained-models) |
-
-
-### 2. Generate protocols
+### 1. Generate protocols
 
 Training and inference scripts provided in this repository are designed to load audio files listed in train/valid/test CSV protocol files. Python scripts for generating these protocols are provided in `protocols/`. Each script is named after the database it processes. 
 
@@ -148,6 +137,22 @@ To generate protocols for your own data:
 - refer to `CVoiceFake.py` if your real and fake audios are stored separately.
 - refer to `WildSVDD.py` if your audio filenames indicate whether they are real or fake.
 
+### 2. Download checkpoints
+
+Our training script initializes SSL front-end with random weights and, by default, replaces them with the corresponding pretrained Fairseq checkpoints saved in your `/base_path/Log/ssl-weights/`.
+
+If you wish to continue fine-tuning with our checkpoints, simply modify the default checkpoint path to your downloaded AntiDeepfake checkpoints.
+
+
+| Model           | Download Link                 |
+| --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Fairseq MMS**         | Pretrained models from [here](https://github.com/facebookresearch/fairseq/tree/main/examples/mms#pretrained-models)                                                                      |
+| **Fairseq XLS-R**       | Model link from [here](https://github.com/facebookresearch/fairseq/blob/main/examples/wav2vec/xlsr/README.md#xls-r)                                                          |
+| **Fairseq Wav2Vec 2.0** | Base (no finetuning) and Large (LV-60 + CV + SWBD + FSH), no finetuning, from [here](https://github.com/facebookresearch/fairseq/tree/main/examples/wav2vec#pre-trained-models)                |
+| **Fairseq HuBERT**      | Extra Large (\~1B params), trained on Libri-Light 60k hrs, no finetuning, from [here](https://github.com/facebookresearch/fairseq/tree/main/examples/wav2vec#pre-trained-models) |
+| **AntiDeepfake**      | [Zenodo](https://zenodo.org/records/15580543) and [Hugging Face](https://huggingface.co/collections/nii-yamagishilab/antideepfake-685a1788fc514998e841cdfc) |
+
+
 ### 3. Train
 
 To train the MMS-300M model:
@@ -157,8 +162,12 @@ python main.py hparams/mms_300m.yaml \
     --base_path /your/base_path \
     --exp_name my_job \
     --lr 1e-6 \
-    --valid_step 2025 \ # Perform full validation every 2025 mini-batches
-    --use_da True       # Enable RawBoost data augmentation
+    # Perform full validation every 2025 mini-batches
+    --valid_step 2025 \
+    # Enable RawBoost data augmentation
+    --use_da True \
+    # Initialize model weights with AntiDeepfake checkpoint
+    --pretrained_weights '{"detector": "/path/to/your/downloaded/antideepfake/mms_300m.ckpt"}'
 ```
 Configuration YAML files are named after the model they correspond to. Training logs and checkpoints will be saved under `/base_path/Log/exps/exp_mms_300m_my_job`. If this exp folder already exists, the script will try to resume training from the last saved checkpoint. Evaluation results with the best validation model will be stored in the same folder with name `evaluation_score.csv`.
 
@@ -191,13 +200,9 @@ The message "No data for ID_PREFIX\_1" means no audio IDs in your protocol start
 You can use `test.py` for standalone score generation with any model checkpoint, or to evaluate data that is not included in your test protocol. Please refer to its comments for detailed usage instructions.
 
 
-### 5. Further fine-tuning
+## Our fine-tuning results
 
-We provide our AntiDeepfake .ckpt checkpoints on [Zenodo](https://zenodo.org/records/15580543) as well as in .safetensors format on [Hugging Face](https://huggingface.co/collections/nii-yamagishilab/antideepfake-685a1788fc514998e841cdfc). To continue fine-tuning with these checkpoints, please use the same training script from Step 3 and add `--pretrained_weights '{"detector": "/path/to/your/downloaded/antideepfake/mms_300m.ckpt"}'`
-
-Fine-tuning will follow a similar process to training a new model, except that SSL weights will be replaced as AntiDeepfake checkpoints.
-
-Below is our evaluation performance of fine-tuning AntiDeepfake models on Deepfake-Eval-2024 train set (PT = Pre-training, PST = Post-training, FT = Fine-tuning, 4s = Input Duration is 4 seconds).
+Below is our evaluation EER performance of fine-tuning AntiDeepfake models on Deepfake-Eval-2024 train set (PT = Pre-training, PST = Post-training, FT = Fine-tuning, 4s = Input Duration is 4 seconds). Please note that we do not provide these fine-tuned checkpoints, as they would double the required storage.
 
 | Model ID     | PT+PST+FT 4s | PT+PST+FT 10s | PT+PST+FT 13s | PT+PST+FT 30s | PT+PST+FT 50s | PT+FT 4s | PT+FT 10s | PT+FT 13s | PT+FT 30s | PT+FT 50s |
 |--------------|--------------|---------------|---------------|---------------|---------------|----------|-----------|-----------|-----------|-----------|
@@ -228,6 +233,7 @@ If you find this repository useful, please consider citing:
 @article{antideepfake_2025,
       title={Post-training for Deepfake Speech Detection}, 
       author={Wanying Ge, Xin Wang, Xuechen Liu, Junichi Yamagishi},
+      journal={arXiv preprint arXiv:2506.21090},
       year={2025},
 }
 ```

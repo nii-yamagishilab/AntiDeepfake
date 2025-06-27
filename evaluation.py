@@ -72,7 +72,7 @@ def parse_file(filename):
 
     return data
 
-def compute_metrics(y_true, logits):
+def compute_metrics(y_true, logits, pred_threshold=0.5):
     logits_tensor = torch.tensor(logits)
     softmax_scores = F.softmax(logits_tensor, dim=1).numpy()
     score_positive = softmax_scores[:, 1]
@@ -85,7 +85,7 @@ def compute_metrics(y_true, logits):
     eer, eer_threshold, _, _, _ = compute_eer(y_true, score_positive)
 
     # Threshold-based predictions (default 0.5)
-    predicted_labels = (score_positive >= 0.5).astype(int)
+    predicted_labels = (score_positive >= pred_threshold).astype(int)
 
     precision = precision_score(y_true, predicted_labels)
     recall = recall_score(y_true, predicted_labels)
@@ -119,7 +119,9 @@ def main(filename):
         y_true = np.array(data[key]['y_true'])
         logits = np.array(data[key]['logits'])
 
-        metrics = compute_metrics(y_true, logits)
+        pred_threshold = 0.5
+
+        metrics = compute_metrics(y_true, logits, pred_threshold)
         metrics['subset'] = key  # Add subset name to metrics
         results.append(metrics)
 
@@ -139,6 +141,7 @@ def main(filename):
     
     # Format display
     print("\n===== METRICS SUMMARY =====")
+    print(f"For accuracy, precision, recall, f1, fpr and fnr, threshold of real class probablity is {pred_threshold}\n")
     print(df_results.round(4).to_string())
 
 if __name__ == "__main__":
