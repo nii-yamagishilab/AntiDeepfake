@@ -30,7 +30,7 @@ __email__ = "gewanying@nii.ac.jp"
 __copyright__ = "Copyright 2025, National Institute of Informatics"
 
 # Define paths
-metadata_path = "/path/to/your/Deepfake-Eval-2024/metadata.csv"
+metadata_path = "/path/to/your/Deepfake-Eval-2024/audio-metadata-publish.csv"
 audio_source_dir = "/path/to/your/Deepfake-Eval-2024/audio-data"
 audio_target_dir = "/path/to/your/Deepfake-Eval-2024/data/unsegmented"
 
