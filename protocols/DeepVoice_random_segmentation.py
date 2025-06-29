@@ -1,3 +1,9 @@
+"""This script was used in our experiment to cut original DeepVoice dataset into
+shorter, overlapped segments.
+
+The exact staring end ending points when we ran this script is provided in
+DeepVoice_seg_log.txt
+"""
 import os
 import random
 from pathlib import Path
