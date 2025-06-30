@@ -109,11 +109,11 @@ wget -O toy_example.tar.gz https://zenodo.org/records/7497769/files/project-04-t
 tar -xzvf toy_example.tar.gz
 cd -
 
+# install dependencies
+# FOLLOW INSTALLATION SECTION
+
 # git clone the code
 git clone https://github.com/nii-yamagishilab/AntiDeepfake.git
-
-# install dependency
-bash AntiDeepfake/install.sh
 
 # download an AntiDeepfake checkpoint
 cd AntiDeepfake

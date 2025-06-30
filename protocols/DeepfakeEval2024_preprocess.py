@@ -8,7 +8,8 @@ to train and test partitions based on its metadata protocol.
 │   ├── xx.wav
 │   ├── . . .
 ├── . . . (data of other modalities are not used)
-├── data/ (this script will generate this folder)
+(this script will generate the following folder)
+├── data/ 
 │   ├── unsegmented/train/
 │   │   ├── real/
 │   │   │   ├── (audio files)

@@ -12,7 +12,14 @@ experiment using the DeepVoice_seg_log.txt provided in this repo.
 │   │   ├── REAL/
 │   │   │   ├── xx.wav
 │   │   │   ├── . . .
-│   ├── AUDIO_SEGMENTS/ (your segmented audio files will be saved here)
+(this script will generate the following folder)
+│   ├── AUDIO_SEGMENTS/ 
+│   │   ├── FAKE/
+│   │   │   ├── xx_seg_x.wav
+│   │   │   ├── . . .
+│   │   ├── REAL/
+│   │   │   ├── xx_seg_x.wav
+│   │   │   ├── . . .
 
 DeepVoice_seg_log.txt:
 Audio: Obama-to-Biden_seg_1, start at: 0, end at: 209527

@@ -20,7 +20,7 @@ Note: This script assumes you have already run `DeepfakeEval2024_preprocess.py`.
 │   │   │   │   ├── xx.wav/mp3/m4a
 │   │   │   ├── real/
 │   │   │   │   ├── xx.wav/mp3/m4a
-
+(this script will generate the following folder)
 │   ├── segmented/
 │   │   ├── train/
 │   │   │   ├── 4s/
