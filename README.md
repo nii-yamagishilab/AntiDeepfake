@@ -109,20 +109,21 @@ wget -O toy_example.tar.gz https://zenodo.org/records/7497769/files/project-04-t
 tar -xzvf toy_example.tar.gz
 cd -
 
-# install dependencies
-# FOLLOW INSTALLATION SECTION
-
 # git clone the code
 git clone https://github.com/nii-yamagishilab/AntiDeepfake.git
+
+# install dependency
+bash AntiDeepfake/install.sh
 
 # download an AntiDeepfake checkpoint
 cd AntiDeepfake
 mkdir downloads
 wget -O downloads/mms_300m.ckpt https://zenodo.org/records/15580543/files/mms_300m.ckpt
 
-# scoring
+# use venv created by install.sh
 conda activate antideepfake
 
+# scoring
 python main.py inference hparams/mms_300m.yaml --base_path $PWD/.. --exp_name eval_antideepfake_mms_300m_toy_example --test_csv protocols/toy_example_test.csv --pretrained_weights '{"detector": "downloads/mms_300m.ckpt"}'
 
 # ...

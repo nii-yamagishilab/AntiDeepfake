@@ -4,6 +4,7 @@
 
 ### New conda environments ###
 conda create --name antideepfake python==3.9.0
+eval "$(conda shell.bash hook)"
 conda activate antideepfake
 conda install pip==24.0
 
