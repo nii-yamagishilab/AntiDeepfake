@@ -188,7 +188,7 @@ Training and inference scripts provided in this repository are designed to load 
 
 In the demonstration above, we used `protocols/toy_example_test.csv` to do inference. You can check the content of this CSV file.
 
-Python scripts for generating these protocols are provided in `protocols`. Each script is named after the database it processes. 
+Python scripts for generating database protocols are provided in `protocols`. Each script is named after the database it processes. 
 
 All protocols are designed to follow the same format so we can easily shuffle, split, or merge them. To merge multiple CSV protocols as in our experiment, you can refer to `generate_protocol_by_proportion.py`.
 
@@ -251,7 +251,7 @@ python main.py hparams/mms_300m.yaml \
 Notes:
 1. Configuration YAML files are named after the model they correspond to. Please use the corresponding configuration file in `hparams`.
 2. Training logs and checkpoints will be saved under `/base_path/Log/exps/exp_mms_300m_<exp_name>`.
-3. If the above `exp` folder already exists, the script will try to resume training from the last saved checkpoint in the folder 
+3. If the above `exp` folder already exists, the script will try to resume training from the last saved checkpoint in the folder.
 4. For multi-GPU training, please use:
 ```bash
 torchrun --nnodes=1 --nproc-per-node=<NUM_GPU> main.py hparams/<MODEL>.yaml
@@ -265,17 +265,19 @@ For using the best validation checkpoint from your own experiment:
 ```
 python main.py inference hparams/mms_300m.yaml \
     --base_path /your/base_path \
-    --exp_name fine_training \  # Must match the name used during training
+    # Exp folder name must match the name used during training
+    --exp_name fine_training \
     --test_csv /path/to/your/test.csv
 ```
-The script will automatically search for the best validation checkpoint in the specified experiment folder `/base_path/Log/exps/exp_mms_300m_<exp_name>`. An `evaluation_score.csv` file will be saved in the same folder.
+The script will automatically search for the best validation checkpoint in the specified experiment folder `/base_path/Log/exps/exp_mms_300m_<exp_name>`. It will generate an `evaluation_score.csv` file in the same folder.
 
 
 For using AntiDeepfake checkpoints without training:
 ```
 python main.py inference hparams/mms_300m.yaml \
     --base_path /your/base_path \
-    --exp_name eval_antideepfake_mms_300m \  # Use a new folder name to avoid conflicts
+    # Use a new exp folder name to avoid conflicts
+    --exp_name eval_antideepfake_mms_300m \
     --test_csv /path/to/your/test.csv
     # Initialize model weights with AntiDeepfake checkpoint
     --pretrained_weights '{"detector": "/path/to/your/downloaded/antideepfake/mms_300m.ckpt"}'
@@ -318,7 +320,7 @@ Please note that we do not provide these fine-tuned checkpoints.
 | XLS-R-2B     | 12.14        | 9.80          | 9.98          | 9.46          | 9.68          | 12.88    | 10.75     | 10.39     | 9.67      | 9.98      |
 
 # **Attribution and Licenses**
-All AntiDeepfake models were developed by [Yamagishi Lab](https://yamagishilab.jp/) at the National Institute of Informatics (NII), Japan. All model weights are the intellectual property of NII and are made available for research and educational purposes under the licenses
+All AntiDeepfake models were developed by [Yamagishi Lab](https://yamagishilab.jp/) at the National Institute of Informatics (NII), Japan. All model weights and code scripts are intellectual property of NII and are made available for research and educational purposes under the licenses
 * **Code** – BSD-3-Clause, see [`LICENSE-CODE`](./LICENSE-CODE).
 * **Model checkpoints** – CC BY-NC-SA 4.0, see [`LICENSE-CHECKPOINT`](./LICENSE-CHECKPOINT).
 
