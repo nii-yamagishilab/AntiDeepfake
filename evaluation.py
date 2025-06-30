@@ -44,19 +44,24 @@ def extract_scores(score_str):
         print(f"Error parsing score: {e}")
         return [None, None]
 
+def get_prefix(id_str):
+    # assumpe ID is written in format ID_PREFIX-filename
+    return id_str.split('-')[0]
+    
 def parse_file(filename):
-    data = {
-        # To get pooled metrics for the whole score.csv file
-        'all': {'y_true': [], 'logits': []},
-        # To get metrics for each specific databases,
-        # based on the ID_PREFIX defined when saving database protocol
-        'ID_PREFIX_1': {'y_true': [], 'logits': []},
-        'ID_PREFIX_2': {'y_true': [], 'logits': []},
-        }
 
     df = pd.read_csv(filename)
     df["Logits"] = df["Score"].apply(extract_scores)
+    df["Dataset"] = df["ID"].apply(get_prefix)
+    
+    data = {
+        # To get pooled metrics for the whole score.csv file
+        'all': {'y_true': [], 'logits': []},
+        }
+    for dataset in df["Dataset"].unique():
+        data[dataset] = {'y_true': [], 'logits': []}
 
+        
     for _, row in df.iterrows():
         file_id = row["ID"].strip()
         logits = row["Logits"]
