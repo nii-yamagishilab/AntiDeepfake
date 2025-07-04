@@ -52,6 +52,8 @@ For more technical details and analysis, please refer to our paper [Post-trainin
 
 [June 27, 2025] Initial release!!!
 
+[July 4, 2025] We added supplementary information to our training data to help guide your selection of which data to use. Please check [here](./protocols/README.md).
+
 ## Table of Contents
 - [Try it out](#try-it-out)
 - [Installation](#installation)
