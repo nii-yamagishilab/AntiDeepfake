@@ -22,7 +22,7 @@ def load_weights(trg_state, path, func_name_change=lambda x: x):
         path, 
         map_location=lambda storage, loc: storage,
         # set to False for loading fariseq pt models: w2v_small, w2v_large, hubert_xl
-        weights_only=False,
+        weights_only=True,
     )
 
     # if it is a fairseq-style checkpoint
