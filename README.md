@@ -219,7 +219,7 @@ Our code creates the models using configuration files. Their front ends are init
 | **Fairseq MMS**         | Pretrained models from [here](https://github.com/facebookresearch/fairseq/tree/main/examples/mms#pretrained-models)                                                                      |
 | **Fairseq XLS-R**       | Model link from [here](https://github.com/facebookresearch/fairseq/blob/main/examples/wav2vec/xlsr/README.md#xls-r)                                                          |
 | **Fairseq Wav2Vec 2.0** | Base (no finetuning) and Large (LV-60 + CV + SWBD + FSH), no finetuning, from [here](https://github.com/facebookresearch/fairseq/tree/main/examples/wav2vec#pre-trained-models)                |
-| **Fairseq HuBERT**      | Extra Large (\~1B params), trained on Libri-Light 60k hrs, no finetuning, from [here](https://github.com/facebookresearch/fairseq/tree/main/examples/wav2vec#pre-trained-models) |
+| **Fairseq HuBERT**      | Extra Large (\~1B params), trained on Libri-Light 60k hrs, no finetuning, from [here](https://github.com/facebookresearch/fairseq/tree/main/examples/hubert#pre-trained-and-fine-tuned-asr-models) |
 
 
 ### 3. Training
