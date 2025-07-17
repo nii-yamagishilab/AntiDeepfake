@@ -67,7 +67,7 @@ def collect_audio_metadata(metadata):
         file_path = os.path.join(data_folder, "flac", f"{row['ID']}.flac")
         file_id = ID_PREFIX + row["ID"]
         # All 2021-DF data is eval
-        subset_id = 'eval'
+        subset_id = 'test'
         label = row["Label"]
         # Check if file exists
         if os.path.exists(file_path):
