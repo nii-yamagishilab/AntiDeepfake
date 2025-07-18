@@ -29,10 +29,6 @@ def dataio_prepare(hparams):
         csv_path=hparams["valid_csv"],
         replacements={"ROOT": data_folder},
     )
-    test_data = sb.dataio.dataset.DynamicItemDataset.from_csv(
-        csv_path=hparams["test_csv"],
-        replacements={"ROOT": data_folder},
-    )
 
     # === Dataloader behaviour for TRAIN and VALID data ===
     # Step[1]: Define which column should be readed from the .csv protocol
