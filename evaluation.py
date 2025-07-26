@@ -77,11 +77,21 @@ def parse_file(filename):
 
     return data
 
-def compute_metrics(y_true, logits, pred_threshold=0.5):
+def softmax_score(logits):
+    """given [N, 2] (score for negative and positive classes), compute the final score
+    for positive class
+
+    this function uses softmax and return the prob of the positive class
+    """
     logits_tensor = torch.tensor(logits)
     softmax_scores = F.softmax(logits_tensor, dim=1).numpy()
     score_positive = softmax_scores[:, 1]
+    return score_positive
 
+def compute_metrics(y_true, logits, pred_threshold=0.5, get_score=softmax_score):
+
+    #
+    score_positive = get_score(logits)
     # ROC & AUC
     fpr, tpr, thresholds = roc_curve(y_true, score_positive, pos_label=1)
     roc_auc = auc(fpr, tpr)
