@@ -79,7 +79,8 @@ conda install pip==24.0
 pip install torch==2.6.0 torchaudio==2.6.0 --index-url https://download.pytorch.org/whl/cu118
 
 ### Install Fariseq ###
-# fairseq 0.10.2 on pip does not work
+# pip install fairseq
+# or to reproduce our venv:
 git clone https://github.com/pytorch/fairseq
 cd fairseq
 # checkout this specific commit. Latest commit does not work
@@ -88,6 +89,8 @@ pip install --editable .
 cd ../
 
 ### Install SpeechBrain ###
+# pip install speechbrain
+# or to reproduce our venv:
 git clone https://github.com/speechbrain/speechbrain.git
 cd speechbrain
 pip install -r requirements.txt
@@ -95,11 +98,15 @@ pip install --editable .
 
 ### Install other packages ###
 pip install tensorboard tensorboardX soundfile pandarallel scikit-learn numpy==1.21.2 pandas==1.4.3 scipy==1.7.2
+
+### Clone Our Repository ###
+# Please ensure that your AntiDeepfake/working directory 
+# does not contain copies of fairseq or speechbrain repo.
 ```
 
 ## Usage demonstration
 
-Here is a demonstration of using an Antifake checkpoint for deepfake detection.
+Here is a demonstration of using an AntiDeepfake checkpoint for deepfake detection.
 
 ```bash
 # go to an empty project folder 
