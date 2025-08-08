@@ -476,10 +476,6 @@ class SSLBrain(sb.core.Brain):
             df_score.to_csv(self.hparams.score_path, index=False)
             logger.info("Scores saved to {}".format(self.hparams.score_path))
                 
-        # Calculate EER and print
-        eer_cm = compute_metrics(score_data['Label'], score_data['Score'])['eer']
-        logger.info("Equal error rate: {:8.9f} %".format(eer_cm * 100))
-
         # Save output feature
         if hasattr(self.hparams, 'emb_path'):
             emb_save_path = self.hparams.emb_path
@@ -487,6 +483,10 @@ class SSLBrain(sb.core.Brain):
             emb_save_path = Path(self.hparams.score_path).with_suffix('.pkl')
         logger.info("Embeddings saved to {}".format(str(emb_save_path)))
         pickle_dump(emb_array, str(emb_save_path))
+
+        # Calculate EER and print
+        eer_cm = compute_metrics(score_data['Label'], score_data['Score'])['eer']
+        logger.info("Equal error rate: {:8.9f} %".format(eer_cm * 100))
         return
 
 def main():
