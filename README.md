@@ -95,6 +95,7 @@ git clone https://github.com/speechbrain/speechbrain.git
 cd speechbrain
 pip install -r requirements.txt
 pip install --editable .
+cd ../
 
 ### Install other packages ###
 pip install tensorboard tensorboardX soundfile pandarallel scikit-learn numpy==1.21.2 pandas==1.4.3 scipy==1.7.2
@@ -217,7 +218,7 @@ Our code creates the models using configuration files. Their front ends are init
 
 * If you do post-training or fine-tuning upon an AntiDeepfake checkpoint, please download the AntiDeepfake checkpoint. The weights of the front end and the rest of the model will be overwritten using the AntiDeepfake checkpoint.
 
-* If you want to do your own post-training using Fairseq pre-trained SSL front ends, please download Fairseq checkpoints. The weights of the front will be re-initialized using the Fairseq checkpoint.
+* If you want to do your own post-training using Fairseq pre-trained SSL front ends, please download Fairseq checkpoints. The weights of the front end will be re-initialized using the Fairseq checkpoint.
 
 
 | Model           | Download Link                 |
