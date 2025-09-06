@@ -62,11 +62,20 @@ class SSLBrain(sb.core.Brain):
                 logger.info("Loading pre-trained weights {:s} from {:s}".format(
                     key, str(pretrained_path))
                 )
-                # used for loading fairseq-style checkpoints
-                def name_mapper(n): return f"m_ssl.model.{n}"
+
+                module_ist = getattr(self.modules, key)
+
+                if hasattr(module_ist, 'name_map'):
+                    name_mapper = module_ist.name_map
+                else:
+                    name_mapper = lambda x: f"m_ssl.model.{n}"
+                    
+                ## used for loading fairseq-style checkpoints
+                #def name_mapper(n): return f"m_ssl.model.{n}"
+                
                 # load pre-trained model for specific module
                 load_weights(
-                    getattr(self.modules, key).state_dict(), 
+                    module_ist.state_dict(), 
                     pretrained_path,
                     func_name_change=name_mapper,
                 )
