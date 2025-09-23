@@ -50,6 +50,8 @@ For more technical details and analysis, please refer to our paper [Post-trainin
 
 ## 📢 News and Updates
 
+[Sep. 20, 2025] Add functions and a demo notebook for drift detection. Please check details [README_drift.md](./README_drift.md).
+
 [June 27, 2025] Initial release!!!
 
 [July 4, 2025] We added supplementary information to our training data to help guide your selection of which data to use. Please check [here](./protocols/README.md).
