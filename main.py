@@ -20,8 +20,8 @@ from speechbrain.utils.logger import get_logger
 from speechbrain.dataio.dataloader import LoopedLoader
 
 from dataio.dataio import dataio_prepare, dataio_prepare_test
-from utils import load_weights, set_random_seed
-
+from utils import load_weights, set_random_seed, pickle_dump
+from evaluation import compute_metrics
 
 __author__ = "Wanying Ge, Xin Wang"
 __email__ = "gewanying@nii.ac.jp, wangxin@nii.ac.jp"
@@ -62,14 +62,29 @@ class SSLBrain(sb.core.Brain):
                 logger.info("Loading pre-trained weights {:s} from {:s}".format(
                     key, str(pretrained_path))
                 )
-                # used for loading fairseq-style checkpoints
-                def name_mapper(n): return f"m_ssl.model.{n}"
+
+                module_ist = getattr(self.modules, key)
+
+                if hasattr(module_ist, 'name_map'):
+                    name_mapper = module_ist.name_map
+                else:
+                    name_mapper = lambda x: f"m_ssl.model.{n}"
+                    
+                ## used for loading fairseq-style checkpoints
+                #def name_mapper(n): return f"m_ssl.model.{n}"
+                
                 # load pre-trained model for specific module
                 load_weights(
-                    getattr(self.modules, key).state_dict(), 
+                    module_ist.state_dict(), 
                     pretrained_path,
                     func_name_change=name_mapper,
                 )
+            else:
+                if not pretrained_path.exists():
+                    logger.error("Not find {:s}".format(str(pretrained_path)))
+                    sys.exit(1)
+                
+                
 
         return
 
@@ -80,6 +95,17 @@ class SSLBrain(sb.core.Brain):
         preds = self.modules.detector(input_data)
         return preds
 
+    def compute_analysis(self, batch, stage):
+        """Computes forward pass through SSL model and returns binary class predictions 
+        """
+        input_data = batch["wav"].data.to(device=self.device, non_blocking=True)
+        try:
+            preds, pooled_emb = self.modules.detector.analysis(input_data)
+        except NameError:
+            logger.error("analysis is not implemented in model")
+            sys.exit(1)
+        return preds, pooled_emb
+    
     def compute_objectives(self, preds, batch, stage):
         """Compute loss; log prediction and ground-truth for valid EER calculation
         """
@@ -395,7 +421,82 @@ class SSLBrain(sb.core.Brain):
             # Write the final score
             if sb.utils.distributed.if_main_process():
                 df_score.to_csv(self.hparams.score_path, index=False)
-                print("Scores saved to {}".format(self.hparams.score_path))
+                logger.info("Scores saved to {}".format(self.hparams.score_path))
+
+            # Calculate EER and print
+            eer_cm = compute_metrics(score_data['Label'], score_data['Score'])['eer']
+            logger.info("Equal error rate: {:8.9f} %".format(eer_cm * 100))
+
+
+
+    def analyze(self, dataset, min_key, loader_kwargs={}):
+        """analyze(dataset, min_key, loader_kwargs={})
+        
+        Called for analysis on the test set.
+
+        This function requires customization of the compute_forward of model.
+        
+        """
+        ###
+        # initialization
+        ###
+        
+        loader_kwargs["ckpt_prefix"] = None
+        dataset = self.make_dataloader(
+            dataset, sb.Stage.TEST, **loader_kwargs
+        )
+        # Load the best model based on the given key
+        # (if available)
+        self.on_evaluate_start(min_key=min_key)
+
+        self.modules.eval()
+
+        ###
+        # data buffer
+        ###        
+        # Initialize a metric for storing IDs with corresponding label & score
+        score_preds = sb.utils.metric_stats.BinaryMetricStats()
+
+        total_num = len(dataset)
+        # array to save embedding
+        emb_array = np.zeros([total_num, self.modules.detector.get_emb_dim()], dtype=np.float32)
+        
+        ###
+        # main loop
+        ###
+        with torch.no_grad():
+            for idx, batch in tqdm(enumerate(dataset), total=total_num):
+                preds, emb = self.compute_analysis(batch, stage=sb.Stage.TEST)
+                score_preds.append(
+                    ids=batch["id"],
+                    scores=preds,
+                    labels=batch["logit"],
+                    )
+                emb_array[idx] = emb.data.cpu().numpy()[0]
+                
+        score_data = {
+            "ID": score_preds.ids,
+            "Score": [score.tolist() for score in score_preds.scores],
+            "Label": [label.item() for label in score_preds.labels],
+        }
+        df_score = pd.DataFrame(score_data)
+        # Write the final score
+        if sb.utils.distributed.if_main_process():
+            df_score.to_csv(self.hparams.score_path, index=False)
+            logger.info("Scores saved to {}".format(self.hparams.score_path))
+                
+        # Save output feature
+        if hasattr(self.hparams, 'emb_path'):
+            emb_save_path = self.hparams.emb_path
+        else:
+            emb_save_path = Path(self.hparams.score_path).with_suffix('.pkl')
+        logger.info("Embeddings saved to {}".format(str(emb_save_path)))
+        pickle_dump(emb_array, str(emb_save_path))
+
+        # Calculate EER and print
+        eer_cm = compute_metrics(score_data['Label'], score_data['Score'])['eer']
+        logger.info("Equal error rate: {:8.9f} %".format(eer_cm * 100))
+        return
 
 def main():
     ######
@@ -404,9 +505,9 @@ def main():
 
     arg1 = sys.argv[1]
     # switching mode
-    if arg1 == "inference":
+    if arg1 == "inference" or arg1 == 'analysis':
         # inference mode
-        working_mode = 'inference'
+        working_mode = arg1
         hparams_file, run_opts, overrides = sb.parse_arguments(sys.argv[2:])
     else:
         # training mode
@@ -494,6 +595,33 @@ def main():
         ######
         brain.evaluate(test_data, min_key="EqualErrorRate")
 
+    elif working_mode == 'analysis':
+        ######
+        # prepare test data
+        ######
+        test_data = dataio_prepare_test(hparams)
+
+        ######
+        # initialize model
+        ######
+        brain = SSLBrain(
+            modules=hparams["modules"],
+            opt_class=hparams["optimizer"],
+            hparams=hparams,
+            run_opts=run_opts,
+            checkpointer=hparams["checkpointer"],
+        )
+
+        ######
+        # load best validation model and run inference
+        ######
+        brain.analyze(test_data, min_key="EqualErrorRate")
+        
+    else:
+        logger.error("Unknown working mode {:s}".format(hparams['working_mode']))
+        sys.exit(1)
+
+        
     return
 
 if __name__ == "__main__":

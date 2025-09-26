@@ -5,6 +5,10 @@ including:
 * Setting random seeds for reproducibility - set_random_seed()
 """
 import random
+import os
+import itertools
+import collections
+import pickle
 
 import torch
 import numpy as np
@@ -54,3 +58,39 @@ def set_random_seed(seed):
     random.seed(seed)
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
+
+
+############
+# data IO
+############
+def pickle_dump(data, file_path):
+    """ pickle_dump(data, file_path)
+    Dump data into a pickle file
+                                                                                                    
+    inputs:
+      data: python object, data to be dumped
+      file_path: str, path to save the pickle file
+    """
+    try:
+        os.mkdir(os.path.dirname(file_path))
+    except OSError:
+        pass
+
+    with open(file_path, 'wb') as file_ptr:
+        pickle.dump(data, file_ptr)
+    return
+
+def pickle_load(file_path):
+    """ data = pickle_load(file_path)
+    Load data from a pickle dump file
+                                                                          
+    inputs:
+      file_path: str, path of the pickle file
+                                                                  
+    output:
+      data: python object
+    """
+    with open(file_path, 'rb') as file_ptr:
+        data = pickle.load(file_ptr)
+    return data
+

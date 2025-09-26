@@ -85,7 +85,7 @@ class Model(torch.nn.Module):
             out_features=self.v_out_class,
         )
         
-    def forward(self, wav):
+    def __forward(self, wav):
         # [batch, frame, hidden_dim]
         emb = self.m_ssl.extract_feat(wav)
         # [batch, hidden_dim, frame]
@@ -96,4 +96,13 @@ class Model(torch.nn.Module):
         pooled_emb = pooled_emb.view(emb.size(0), -1)
         # [batch, 2]
         pred = self.proj_fc(pooled_emb)
-        return pred
+        return pred, pooled_emb
+    
+    def forward(self, wav):
+        return self.__forward(wav)[0]
+    
+    def get_emb_dim(self):
+        return self.m_ssl.out_dim
+    
+    def analysis(self, wav):
+        return self.__forward(wav)
