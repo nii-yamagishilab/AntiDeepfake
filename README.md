@@ -22,6 +22,14 @@
 
 <hr>
 
+## 📢 News and Updates
+
+[Sep. 20, 2025] Add functions and a demo notebook for drift detection. Please check details [README_drift.md](./README_drift.md).
+
+[June 27, 2025] Initial release!!!
+
+[July 4, 2025] We added supplementary information to our training data to help guide your selection of which data to use. Please check [here](./protocols/README.md).
+
 ## Introduction
 
 The AntiDeepfake project provides a series of powerful foundation models post-trained for deepfake detection. The AntiDeepfake model can be used for feature extraction for deepfake detection in a zero-shot manner, or it may be further fine-tuned and optimized for a specific database or deepfake-related task.
@@ -47,14 +55,6 @@ For more technical details and analysis, please refer to our paper [Post-trainin
 | [XLS-R-1B](https://huggingface.co/nii-yamagishilab/xls-r-1b-anti-deepfake)       | 965M   | ✓  | 5.39    | 2.52      | 5.74       | 12.14        | 1.35     | 26.76    |
 | [XLS-R-2B](https://huggingface.co/nii-yamagishilab/xls-r-2b-anti-deepfake)       | 2.2B   | ✓  | 4.67    | 2.30      | 2.62       | 1.65         | 1.23     | 27.77    |
 
-
-## 📢 News and Updates
-
-[Sep. 20, 2025] Add functions and a demo notebook for drift detection. Please check details [README_drift.md](./README_drift.md).
-
-[June 27, 2025] Initial release!!!
-
-[July 4, 2025] We added supplementary information to our training data to help guide your selection of which data to use. Please check [here](./protocols/README.md).
 
 ## Table of Contents
 - [Try it out](#try-it-out)
