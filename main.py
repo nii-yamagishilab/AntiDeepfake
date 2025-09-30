@@ -32,8 +32,8 @@ logger = get_logger(__name__)
 class SSLBrain(sb.core.Brain):
     def __init__(self, *args, **kargs):
         super(SSLBrain, self).__init__(*args, **kargs)
-        # in case model is defined via yaml file
-        # if case the model is not defined in yaml, add them here
+        # load model weights if it is defined via yaml file
+        # if the model weight is not defined in yaml, add them here
         # to the checkpointer recoverable settings
         # self.checkpointer.add_recoverables({})
         #
@@ -68,7 +68,7 @@ class SSLBrain(sb.core.Brain):
                 if hasattr(module_ist, 'name_map'):
                     name_mapper = module_ist.name_map
                 else:
-                    name_mapper = lambda x: f"m_ssl.model.{n}"
+                    name_mapper = lambda x: f"m_ssl.model.{x}"
                     
                 ## used for loading fairseq-style checkpoints
                 #def name_mapper(n): return f"m_ssl.model.{n}"

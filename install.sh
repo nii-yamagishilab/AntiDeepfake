@@ -21,10 +21,7 @@ pip install --editable .
 cd ../
 
 ### Install SpeechBrain ###
-git clone https://github.com/speechbrain/speechbrain.git
-cd speechbrain
-pip install -r requirements.txt
-pip install --editable .
+pip install speechbrain==1.0.2
 
 ### Install other packages ###
 pip install tensorboard tensorboardX soundfile pandarallel scikit-learn numpy==1.21.2 pandas==1.4.3 scipy==1.7.2
