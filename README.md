@@ -26,9 +26,10 @@
 
 [Sep. 20, 2025] Add functions and a demo notebook for drift detection. Please check details [README_drift.md](./README_drift.md).
 
+[July 4, 2025] We added supplementary information to our training data to help guide your selection of which data to use. Please check [here](./protocols/README.md).
+
 [June 27, 2025] Initial release!!!
 
-[July 4, 2025] We added supplementary information to our training data to help guide your selection of which data to use. Please check [here](./protocols/README.md).
 
 ## Introduction
 
@@ -91,13 +92,7 @@ pip install --editable .
 cd ../
 
 ### Install SpeechBrain ###
-# pip install speechbrain
-# or to reproduce our venv:
-git clone https://github.com/speechbrain/speechbrain.git
-cd speechbrain
-pip install -r requirements.txt
-pip install --editable .
-cd ../
+pip install speechbrain==1.0.2
 
 ### Install other packages ###
 pip install tensorboard tensorboardX soundfile pandarallel scikit-learn numpy==1.21.2 pandas==1.4.3 scipy==1.7.2
