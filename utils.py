@@ -22,12 +22,22 @@ def load_weights(trg_state, path, func_name_change=lambda x: x):
     """Load trained weights to the state_dict() of a torch.module on CPU
     """
     # load to CPU
-    loaded_state = torch.load(
-        path, 
-        map_location=lambda storage, loc: storage,
-        # set to False for loading fariseq pt models: w2v_small, w2v_large, hubert_xl
-        weights_only=True,
-    )
+    try:
+        loaded_state = torch.load(
+            path, 
+            map_location=lambda storage, loc: storage,
+            # set to False for loading fariseq pt models: w2v_small, w2v_large, hubert_xl
+            weights_only=True,
+        )
+    except pickle.UnpicklingError as e:
+        loaded_state = torch.load(
+            path, 
+            map_location=lambda storage, loc: storage,
+            # set to False for loading fariseq pt models: w2v_small, w2v_large, hubert_xl
+            weights_only=False,
+        )        
+    except:
+        assert 1==0, "Fail to load {:s}".format(path)
 
     # if it is a fairseq-style checkpoint
     if 'model' in loaded_state:
