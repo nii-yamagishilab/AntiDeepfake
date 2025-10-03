@@ -67,7 +67,9 @@ For more technical details and analysis, please refer to our paper [Post-trainin
 
 ## Try it out
 
-Full inference script is available on each model’s [Hugging Face](https://huggingface.co/collections/nii-yamagishilab/antideepfake-685a1788fc514998e841cdfc) page. Simply copy some audio files and run the script to get their detection scores. 
+Inference script is available on each model’s [Hugging Face](https://huggingface.co/collections/nii-yamagishilab/antideepfake-685a1788fc514998e841cdfc) page. Simply copy some audio files and run the script to get their detection scores. 
+
+To train or run large-scale evaluations and save the score files for analysis, please follow the steps below.
 
 ## Installation
 This setup is recommended if you plan to run custom experiments with the code. The commands below provides the same behavior as running `install.sh`.
@@ -329,8 +331,8 @@ Please note that we do not provide these fine-tuned checkpoints.
 
 # **Attribution and Licenses**
 All AntiDeepfake models were developed by [Yamagishi Lab](https://yamagishilab.jp/) at the National Institute of Informatics (NII), Japan. All model weights and code scripts are intellectual property of NII and are made available for research and educational purposes under the licenses
-* **Code** – BSD-3-Clause, see [`LICENSE-CODE`](./LICENSE-CODE).
-* **Model checkpoints** – CC BY-NC-SA 4.0, see [`LICENSE-CHECKPOINT`](./LICENSE-CHECKPOINT).
+* **Code** – BSD-3-Clause, please check [`LICENSE-CODE`](./LICENSE-CODE).
+* **Model checkpoints** – CC BY-NC-SA 4.0, please check [`LICENSE-CHECKPOINT`](./LICENSE-CHECKPOINT).
 
 # **Acknowledgments**
 This project is based on results obtained from project JPNP22007, commissioned by the New Energy and Industrial Technology Development Organization (NEDO).
@@ -345,10 +347,13 @@ Codes are based on the implementations of [wav2vec 2.0 pretraining with SpeechBr
 ## **Citation**
 If you find this repository useful, please consider citing:
 ```
-@article{antideepfake_2025,
-      title={Post-training for Deepfake Speech Detection}, 
-      author={Wanying Ge, Xin Wang, Xuechen Liu, Junichi Yamagishi},
-      journal={arXiv preprint arXiv:2506.21090},
-      year={2025},
+@inproceedings{antideepfake_2025,
+    title={Post-training for Deepfake Speech Detection},
+    author={Ge, Wanying and Wang, Xin and Liu, Xuechen and Yamagishi, Junichi},
+    booktitle={2025 IEEE Automatic Speech Recognition and Understanding Workshop (ASRU)}, 
+    year={2025},
+    volume={},
+    number={},
+    pages={},
 }
 ```
