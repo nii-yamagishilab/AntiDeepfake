@@ -32,14 +32,10 @@ logger = get_logger(__name__)
 class SSLBrain(sb.core.Brain):
     def __init__(self, *args, **kargs):
         super(SSLBrain, self).__init__(*args, **kargs)
-        # load model weights if it is defined via yaml file
-        # if the model weight is not defined in yaml, add them here
-        # to the checkpointer recoverable settings
-        # self.checkpointer.add_recoverables({})
-        #
-        # furthermore, define load_checkpoint to manually load
-        # modules if they are added not via yaml file
+        """Customized behaviours when initializing SSLBrain class
 
+        Gets called before training and testing
+        """
         # load pre-trained weights
         # see comment in the function
         self._init_model()
@@ -49,8 +45,8 @@ class SSLBrain(sb.core.Brain):
     def _init_model(self):
         """Load pre-trained weights
 
-        This is done after randomly initializing all modules.
-        Load pre-trained weights from `hparams.pretrained_weights`, 
+        Gets called after initializing all modules with random weights
+        it will load pre-trained weights from `hparams.pretrained_weights`, 
         matching layers will be replaced with the corresponding weights
         """
         # iterate over all modules specified in yaml
@@ -83,20 +79,22 @@ class SSLBrain(sb.core.Brain):
                 if not pretrained_path.exists():
                     logger.error("Not find {:s}".format(str(pretrained_path)))
                     sys.exit(1)
-                
-                
 
         return
 
     def compute_forward(self, batch, stage):
-        """Computes forward pass through SSL model and returns binary class predictions 
+        """Compute forward pass 
+
+        Get called during training, validation, and testing
         """
         input_data = batch["wav"].data.to(device=self.device, non_blocking=True)
         preds = self.modules.detector(input_data)
         return preds
 
     def compute_analysis(self, batch, stage):
-        """Computes forward pass through SSL model and returns binary class predictions 
+        """Compute forward pass
+
+        Get called at analysis mode
         """
         input_data = batch["wav"].data.to(device=self.device, non_blocking=True)
         try:
@@ -107,7 +105,9 @@ class SSLBrain(sb.core.Brain):
         return preds, pooled_emb
     
     def compute_objectives(self, preds, batch, stage):
-        """Compute loss; log prediction and ground-truth for valid EER calculation
+        """Compute losses
+
+        Get called during training and validation 
         """
         # ground-truth label
         logit = batch["logit"].to(device=self.device, non_blocking=True)
@@ -136,7 +136,12 @@ class SSLBrain(sb.core.Brain):
         train_loader_kwargs={},
         valid_loader_kwargs={}
     ):
+        """We overwrite SpeechBrain's default fit() to use a customized training pipeline
+
+        Get called once in main()
+        """
         logger = sb.core.logger
+        # Build dataloader for training
         if not (
             isinstance(train_set, DataLoader)
             or isinstance(train_set, LoopedLoader)
@@ -146,6 +151,7 @@ class SSLBrain(sb.core.Brain):
                 stage=sb.Stage.TRAIN,
                 **train_loader_kwargs,
             )
+        # Build dataloader for validation
         if valid_set is not None and not (
             isinstance(valid_set, DataLoader)
             or isinstance(valid_set, LoopedLoader)
@@ -156,6 +162,9 @@ class SSLBrain(sb.core.Brain):
                 ckpt_prefix=None,
                 **valid_loader_kwargs,
             )
+        # SpeechBrain's default behaviour at beginning of fit():
+        # "Default implementation compiles the jit modules, initializes optimizers,
+        # and loads the latest checkpoint to resume training."
         self.on_fit_start()
         
         if progressbar is None:
@@ -175,7 +184,7 @@ class SSLBrain(sb.core.Brain):
                 valid_step=self.hparams.valid_step,
             )
 
-        # original validation API
+        # original validation API, gets called after the last training epoch
         self._fit_valid(valid_set=valid_set, epoch=epoch, enable=enable)
 
     def _fit_train_customized(
@@ -186,6 +195,11 @@ class SSLBrain(sb.core.Brain):
         enable,
         valid_step=100
     ):
+        """Customized training behaviour for an single epoch,
+        will perform intra-epoch validation if self.step reaches to a certain number
+
+        Get called for each epoch during training
+        """
         # Training stage
         self.on_stage_start(sb.Stage.TRAIN, epoch)
         self.modules.train()
@@ -198,9 +212,10 @@ class SSLBrain(sb.core.Brain):
         ):
             self.train_sampler.set_epoch(epoch)
 
-        # Time since last intra-epoch checkpoint
+        # Time and step count since last intra-epoch checkpoint
         last_ckpt_time = time.time()
         steps_since_ckpt = 0
+        # Iterate training data
         with tqdm(
             train_set,
             initial=self.step,
@@ -232,8 +247,8 @@ class SSLBrain(sb.core.Brain):
                         self.profiler.stop()
                         quit()
                 
-                ## customize the code to do validation every N steps
                 if self.step % valid_step == 0:
+                    # Perform intra-epoch validation
                     self._fit_valid_customized(valid_set, epoch, enable)
                     if self._should_save_intra_epoch_ckpt(
                         last_ckpt_time,
@@ -251,6 +266,10 @@ class SSLBrain(sb.core.Brain):
         return
 
     def _fit_valid_customized(self, valid_set, epoch, enable):
+        """Perform validation
+
+        Get called during training
+        """
         # Validation stage
         if valid_set is None:
             return 0.0
@@ -271,7 +290,9 @@ class SSLBrain(sb.core.Brain):
         return
     
     def fit_batch(self, batch):
-        """compute_forward();compute_objectives();optimizers_step()
+        """Call compute_forward();compute_objectives();optimizers_step()
+
+        Get called only during training
         """
         should_step = (self.step % self.grad_accumulation_factor) == 0
         
@@ -294,8 +315,11 @@ class SSLBrain(sb.core.Brain):
         return objectives["backprop_loss"].detach()
 
     def on_fit_batch_end(self, objectives):
-        """Called after fit_batch(), updates learning rate and does per-step logging.
+        """Update learning rate and perform logging
+
+        Get called only during training at end of each step/mini-batchh
         """
+        # Update learning rate
         self.hparams.lr_scheduler(self.optimizer)
         # Perform step-wise logging
         if (
@@ -328,7 +352,9 @@ class SSLBrain(sb.core.Brain):
                 )
 
     def evaluate_batch(self, batch, stage):
-        """Return objectives on non-training stages; Log validation loss to logger
+        """Evaluate one mini-batch
+
+        Get called during validation and testing stages
         """
         preds = self.compute_forward(batch, stage=stage)
         objectives = self.compute_objectives(preds, batch, stage=stage)
@@ -342,7 +368,9 @@ class SSLBrain(sb.core.Brain):
         return objectives["backprop_loss"].detach().cpu()
 
     def on_stage_start(self, stage, epoch):
-        """Gets called at the beginning of each epoch
+        """Initialize statistics for logging
+
+        Get called when training/validation/testing stage starts
         """
         if stage != sb.Stage.TRAIN:
             self.error_metrics = self.hparams.error_stats()
@@ -350,7 +378,9 @@ class SSLBrain(sb.core.Brain):
                 self.valid_epoch_loss = 0.0
 
     def on_stage_end(self, stage, stage_loss, epoch=None):
-        """Gets called at the end of each epoch
+        """Perform logging and checkpointing
+
+        Get called during training and validation
         """
         stage_stats = {"loss": stage_loss}
         # Only record loss during training
@@ -389,8 +419,11 @@ class SSLBrain(sb.core.Brain):
             )
 
     def evaluate(self, dataset, min_key, loader_kwargs={}):
-        """Gets called at test stage, perform final evaluation and save score.csv
+        """Perform evaluation and write down CSV score file
+
+        Get called during testing
         """
+        # Build test dataloader
         loader_kwargs["ckpt_prefix"] = None
         dataset = self.make_dataloader(
             dataset, sb.Stage.TEST, **loader_kwargs
@@ -430,12 +463,9 @@ class SSLBrain(sb.core.Brain):
 
 
     def analyze(self, dataset, min_key, loader_kwargs={}):
-        """analyze(dataset, min_key, loader_kwargs={})
-        
-        Called for analysis on the test set.
+        """Similar to evaluate() but also extract embeddings for analysis
 
-        This function requires customization of the compute_forward of model.
-        
+        Get called at analysis mode. It calls a customized compute_analysis()
         """
         ###
         # initialization
