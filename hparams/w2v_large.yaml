@@ -30,8 +30,9 @@ test_csv: !ref <protocol_folder>/test.csv
 use_da: True 
 
 # Replace ssl weights with the following checkpoint
+ckpt_path: !ref <ssl_weight_folder>/w2v_large_lv_fsh_swbd_cv.pt
 pretrained_weights:
-   detector: !ref <ssl_weight_folder>/w2v_large_lv_fsh_swbd_cv.pt
+   detector: !ref <ckpt_path>
 
 # Training and logging
 number_of_epochs: 30

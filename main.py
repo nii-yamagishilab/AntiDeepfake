@@ -1,4 +1,4 @@
-"""This script is used for model training.
+"""This script is used for model training, evaluation and analysis.
 """
 import os
 import sys
@@ -32,9 +32,8 @@ logger = get_logger(__name__)
 class SSLBrain(sb.core.Brain):
     def __init__(self, *args, **kargs):
         super(SSLBrain, self).__init__(*args, **kargs)
-        """Customized behaviours when initializing SSLBrain class
-
-        Gets called before training and testing
+        """Customized behaviours when initializing SSLBrain class,
+        get called before training and testing.
         """
         # load pre-trained weights
         # see comment in the function
@@ -43,11 +42,10 @@ class SSLBrain(sb.core.Brain):
         return
 
     def _init_model(self):
-        """Load pre-trained weights
+        """Load pre-trained weights, get called after raindomly initializing all modules.
 
-        Gets called after initializing all modules with random weights
-        it will load pre-trained weights from `hparams.pretrained_weights`, 
-        matching layers will be replaced with the corresponding weights
+        It will load pre-trained weights from `hparams.pretrained_weights`, 
+        matching layers will be replaced with the corresponding weights.
         """
         # iterate over all modules specified in yaml
         for key in self.hparams.pretrained_weights.keys():
@@ -64,11 +62,9 @@ class SSLBrain(sb.core.Brain):
                 if hasattr(module_ist, 'name_map'):
                     name_mapper = module_ist.name_map
                 else:
+                    # used for loading fairseq-style checkpoints
                     name_mapper = lambda x: f"m_ssl.model.{x}"
                     
-                ## used for loading fairseq-style checkpoints
-                #def name_mapper(n): return f"m_ssl.model.{n}"
-                
                 # load pre-trained model for specific module
                 load_weights(
                     module_ist.state_dict(), 
@@ -83,18 +79,14 @@ class SSLBrain(sb.core.Brain):
         return
 
     def compute_forward(self, batch, stage):
-        """Compute forward pass 
-
-        Get called during training, validation, and testing
+        """Compute forward pass, get called during training, validation, and testing.
         """
         input_data = batch["wav"].data.to(device=self.device, non_blocking=True)
         preds = self.modules.detector(input_data)
         return preds
 
     def compute_analysis(self, batch, stage):
-        """Compute forward pass
-
-        Get called at analysis mode
+        """Compute forward pass, get called at analysis mode.
         """
         input_data = batch["wav"].data.to(device=self.device, non_blocking=True)
         try:
@@ -105,9 +97,7 @@ class SSLBrain(sb.core.Brain):
         return preds, pooled_emb
     
     def compute_objectives(self, preds, batch, stage):
-        """Compute losses
-
-        Get called during training and validation 
+        """Compute losses, get called during training and validation.
         """
         # ground-truth label
         logit = batch["logit"].to(device=self.device, non_blocking=True)
@@ -136,9 +126,8 @@ class SSLBrain(sb.core.Brain):
         train_loader_kwargs={},
         valid_loader_kwargs={}
     ):
-        """We overwrite SpeechBrain's default fit() to use a customized training pipeline
-
-        Get called in main()
+        """We overwrite SpeechBrain's default fit() to use a customized training pipeline,
+        get called in main().
         """
         logger = sb.core.logger
         # Build dataloader for training
@@ -195,10 +184,8 @@ class SSLBrain(sb.core.Brain):
         enable,
         valid_step=100
     ):
-        """Customized training behaviour for an single epoch,
-        will perform intra-epoch validation if self.step reaches to a certain number
-
-        Get called for each epoch during training
+        """Customized training behaviour for an single epoch, perform intra-epoch 
+        validation if self.step reaches to a certain number, get called during training.
         """
         # Training stage
         self.on_stage_start(sb.Stage.TRAIN, epoch)
@@ -267,9 +254,7 @@ class SSLBrain(sb.core.Brain):
         return
 
     def _fit_valid_customized(self, valid_set, epoch, enable):
-        """Perform validation
-
-        Get called during training
+        """Perform validation, get called during training.
         """
         # Validation stage
         if valid_set is None:
@@ -291,9 +276,8 @@ class SSLBrain(sb.core.Brain):
         return
     
     def fit_batch(self, batch):
-        """Train one mini-batch: compute_forward();compute_objectives();optimizers_step()
-
-        Get called only during training
+        """Train one mini-batch: compute_forward();compute_objectives();optimizers_step(),
+        get called only during training.
         """
         should_step = (self.step % self.grad_accumulation_factor) == 0
         
@@ -316,9 +300,8 @@ class SSLBrain(sb.core.Brain):
         return objectives["backprop_loss"].detach()
 
     def on_fit_batch_end(self, objectives):
-        """Update learning rate and perform logging
-
-        Get called only during training after each step/mini-batchh
+        """Update learning rate and perform logging, get called after training is
+        performed on each step/mini-batch.
         """
         # Update learning rate
         self.hparams.lr_scheduler(self.optimizer)
@@ -353,9 +336,8 @@ class SSLBrain(sb.core.Brain):
                 )
 
     def evaluate_batch(self, batch, stage):
-        """Evaluate one mini-batch: compute_forward();compute_objectives()
-
-        Get called during validation
+        """Evaluate one mini-batch: compute_forward();compute_objectives(), 
+        get called during validation.
         """
         preds = self.compute_forward(batch, stage=stage)
         objectives = self.compute_objectives(preds, batch, stage=stage)
@@ -369,9 +351,8 @@ class SSLBrain(sb.core.Brain):
         return objectives["backprop_loss"].detach().cpu()
 
     def on_stage_start(self, stage, epoch):
-        """Initialize statistics for logging
-
-        Get called when training/validation/testing stage starts
+        """Initialize statistics for logging, 
+        get called when training/validation/testing stage starts.
         """
         if stage != sb.Stage.TRAIN:
             self.error_metrics = self.hparams.error_stats()
@@ -379,9 +360,7 @@ class SSLBrain(sb.core.Brain):
                 self.valid_epoch_loss = 0.0
 
     def on_stage_end(self, stage, stage_loss, epoch=None):
-        """Perform logging and checkpointing
-
-        Get called during training and validation
+        """Perform logging and checkpointing, get called during training and validation.
         """
         stage_stats = {"loss": stage_loss}
         # Only record loss during training
@@ -420,9 +399,7 @@ class SSLBrain(sb.core.Brain):
             )
 
     def evaluate(self, dataset, min_key, loader_kwargs={}):
-        """Perform evaluation and write down CSV score file
-
-        Get called in main()
+        """Perform evaluation and write down CSV score file, get called in main().
         """
         # Build test dataloader
         loader_kwargs["ckpt_prefix"] = None
@@ -461,12 +438,9 @@ class SSLBrain(sb.core.Brain):
             eer_cm = compute_metrics(score_data['Label'], score_data['Score'])['eer']
             logger.info("Equal error rate: {:8.9f} %".format(eer_cm * 100))
 
-
-
     def analyze(self, dataset, min_key, loader_kwargs={}):
-        """Similar to evaluate() but also extract embeddings for analysis
-
-        Get called at analysis mode. It calls a customized compute_analysis()
+        """Similar to evaluate() but also extract embeddings for analysis,
+        get called at analysis mode. It calls a customized compute_analysis().
         """
         ###
         # initialization
@@ -531,6 +505,7 @@ class SSLBrain(sb.core.Brain):
         eer_cm = compute_metrics(score_data['Label'], score_data['Score'])['eer']
         logger.info("Equal error rate: {:8.9f} %".format(eer_cm * 100))
         return
+
 
 def main():
     ######
