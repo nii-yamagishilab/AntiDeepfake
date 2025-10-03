@@ -30,8 +30,9 @@ test_csv: !ref <protocol_folder>/test.csv
 use_da: True 
 
 # Replace ssl weights with the following checkpoint
+ckpt_path: !ref <ssl_weight_folder>/xlsr2_960m_1000k.pt
 pretrained_weights:
-   detector: !ref <ssl_weight_folder>/xlsr2_960m_1000k.pt
+   detector: !ref <ckpt_path>
 
 # Training and logging
 number_of_epochs: 30

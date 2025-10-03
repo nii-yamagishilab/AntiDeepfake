@@ -67,10 +67,12 @@ For more technical details and analysis, please refer to our paper [Post-trainin
 
 ## Try it out
 
-Full inference script is available on each model’s [Hugging Face](https://huggingface.co/collections/nii-yamagishilab/antideepfake-685a1788fc514998e841cdfc) page. Simply copy some audio files and run the script to get their detection scores. 
+Inference script is available on each model’s [Hugging Face](https://huggingface.co/collections/nii-yamagishilab/antideepfake-685a1788fc514998e841cdfc) page. Simply copy some audio files and run the script to get their detection scores. 
+
+To train or run large-scale evaluations and save the score files for analysis, please follow the steps below.
 
 ## Installation
-This setup is recommended if you plan to run custom experiments with the code.
+This setup is recommended if you plan to run custom experiments with the code. The commands below provides the same behavior as running `install.sh`.
 
 ```shell
 ### New conda environments ###
@@ -97,8 +99,8 @@ pip install speechbrain==1.0.2
 ### Install other packages ###
 pip install tensorboard tensorboardX soundfile pandarallel scikit-learn numpy==1.21.2 pandas==1.4.3 scipy==1.7.2
 
-### Clone Our Repository ###
-# Please ensure that your AntiDeepfake/working directory 
+### Note ###
+# Please make sure that your AntiDeepfake directory 
 # does not contain copies of fairseq or speechbrain repo.
 ```
 
@@ -131,7 +133,7 @@ wget -O downloads/mms_300m.ckpt https://zenodo.org/records/15580543/files/mms_30
 conda activate antideepfake
 
 # scoring
-python main.py inference hparams/mms_300m.yaml --base_path $PWD/.. --exp_name eval_antideepfake_mms_300m_toy_example --test_csv protocols/toy_example_test.csv --pretrained_weights '{"detector": "downloads/mms_300m.ckpt"}'
+python main.py inference hparams/mms_300m.yaml --base_path $PWD/.. --exp_name eval_antideepfake_mms_300m_toy_example --test_csv protocols/toy_example_test.csv --ckpt_path downloads/mms_300m.ckpt
 
 # ...
 # INFO | __main__ | Loading pre-trained weights detector from downloads/mms_300m.ckpt
@@ -192,7 +194,7 @@ The folder structure can be altered. By doing so, please remember to change the 
 
 ### 1. Generate protocols
 
-Training and inference scripts provided in this repository are designed to load audio files listed in train/valid/test CSV protocol files.
+Training and inference scripts provided in this repository are designed to load audio files listed in train/valid/test CSV files in `protocols`.
 
 In the demonstration above, we used `protocols/toy_example_test.csv` to do inference. You can check the content of this CSV file.
 
@@ -240,7 +242,7 @@ python main.py hparams/mms_300m.yaml \
     # Enable RawBoost data augmentation
     --use_da True \
     # Initialize model weights with AntiDeepfake checkpoint
-    --pretrained_weights '{"detector": "/path/to/your/downloaded/antideepfake/mms_300m.ckpt"}'
+    --ckpt_path /path/to/your/downloaded/antideepfake/mms_300m.ckpt
 ```
 
 To start post-train with a Fairseq checkpoint (e.g., MMS-300M):
@@ -253,7 +255,7 @@ python main.py hparams/mms_300m.yaml \
     # Disable RawBoost data augmentation
     --use_da False \
     # Initialize model weights with Fairseq checkpoint (default setting)
-    --pretrained_weights '{"detector": "/base_path/Log/ssl-weights/base_300m.pt"}'
+    --ckpt_path /base_path/Log/ssl-weights/base_300m.pt
 ```
 
 Notes:
@@ -288,7 +290,7 @@ python main.py inference hparams/mms_300m.yaml \
     --exp_name eval_antideepfake_mms_300m \
     --test_csv /path/to/your/test.csv
     # Initialize model weights with AntiDeepfake checkpoint
-    --pretrained_weights '{"detector": "/path/to/your/downloaded/antideepfake/mms_300m.ckpt"}'
+    --ckpt_path /path/to/your/downloaded/antideepfake/mms_300m.ckpt
 ```
 
 #### Evaluating CSV score
@@ -329,8 +331,8 @@ Please note that we do not provide these fine-tuned checkpoints.
 
 # **Attribution and Licenses**
 All AntiDeepfake models were developed by [Yamagishi Lab](https://yamagishilab.jp/) at the National Institute of Informatics (NII), Japan. All model weights and code scripts are intellectual property of NII and are made available for research and educational purposes under the licenses
-* **Code** – BSD-3-Clause, see [`LICENSE-CODE`](./LICENSE-CODE).
-* **Model checkpoints** – CC BY-NC-SA 4.0, see [`LICENSE-CHECKPOINT`](./LICENSE-CHECKPOINT).
+* **Code** – BSD-3-Clause, please check [`LICENSE-CODE`](./LICENSE-CODE).
+* **Model checkpoints** – CC BY-NC-SA 4.0, please check [`LICENSE-CHECKPOINT`](./LICENSE-CHECKPOINT).
 
 # **Acknowledgments**
 This project is based on results obtained from project JPNP22007, commissioned by the New Energy and Industrial Technology Development Organization (NEDO).
@@ -345,10 +347,13 @@ Codes are based on the implementations of [wav2vec 2.0 pretraining with SpeechBr
 ## **Citation**
 If you find this repository useful, please consider citing:
 ```
-@article{antideepfake_2025,
-      title={Post-training for Deepfake Speech Detection}, 
-      author={Wanying Ge, Xin Wang, Xuechen Liu, Junichi Yamagishi},
-      journal={arXiv preprint arXiv:2506.21090},
-      year={2025},
+@inproceedings{antideepfake_2025,
+    title={Post-training for Deepfake Speech Detection},
+    author={Ge, Wanying and Wang, Xin and Liu, Xuechen and Yamagishi, Junichi},
+    booktitle={2025 IEEE Automatic Speech Recognition and Understanding Workshop (ASRU)}, 
+    year={2025},
+    volume={},
+    number={},
+    pages={},
 }
 ```
