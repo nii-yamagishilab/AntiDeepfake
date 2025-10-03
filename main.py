@@ -138,7 +138,7 @@ class SSLBrain(sb.core.Brain):
     ):
         """We overwrite SpeechBrain's default fit() to use a customized training pipeline
 
-        Get called once in main()
+        Get called in main()
         """
         logger = sb.core.logger
         # Build dataloader for training
@@ -246,7 +246,8 @@ class SSLBrain(sb.core.Brain):
                         )
                         self.profiler.stop()
                         quit()
-                
+
+                # If global step reaches to a certain number
                 if self.step % valid_step == 0:
                     # Perform intra-epoch validation
                     self._fit_valid_customized(valid_set, epoch, enable)
@@ -290,7 +291,7 @@ class SSLBrain(sb.core.Brain):
         return
     
     def fit_batch(self, batch):
-        """Call compute_forward();compute_objectives();optimizers_step()
+        """Train one mini-batch: compute_forward();compute_objectives();optimizers_step()
 
         Get called only during training
         """
@@ -317,7 +318,7 @@ class SSLBrain(sb.core.Brain):
     def on_fit_batch_end(self, objectives):
         """Update learning rate and perform logging
 
-        Get called only during training at end of each step/mini-batchh
+        Get called only during training after each step/mini-batchh
         """
         # Update learning rate
         self.hparams.lr_scheduler(self.optimizer)
@@ -352,9 +353,9 @@ class SSLBrain(sb.core.Brain):
                 )
 
     def evaluate_batch(self, batch, stage):
-        """Evaluate one mini-batch
+        """Evaluate one mini-batch: compute_forward();compute_objectives()
 
-        Get called during validation and testing stages
+        Get called during validation
         """
         preds = self.compute_forward(batch, stage=stage)
         objectives = self.compute_objectives(preds, batch, stage=stage)
@@ -421,7 +422,7 @@ class SSLBrain(sb.core.Brain):
     def evaluate(self, dataset, min_key, loader_kwargs={}):
         """Perform evaluation and write down CSV score file
 
-        Get called during testing
+        Get called in main()
         """
         # Build test dataloader
         loader_kwargs["ckpt_prefix"] = None
@@ -489,7 +490,10 @@ class SSLBrain(sb.core.Brain):
 
         total_num = len(dataset)
         # array to save embedding
-        emb_array = np.zeros([total_num, self.modules.detector.get_emb_dim()], dtype=np.float32)
+        emb_array = np.zeros(
+            [total_num, self.modules.detector.get_emb_dim()],
+            dtype=np.float32
+        )
         
         ###
         # main loop
