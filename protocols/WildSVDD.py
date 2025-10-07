@@ -28,6 +28,7 @@ WildSVDD.csv:
 import os
 import sys
 import csv
+import glob
 
 try:
     import pandas as pd
@@ -51,52 +52,51 @@ output_csv = dataset_name + '.csv'
 # Function to collect metadata from the directory structure
 def collect_metadata(data_folder):
     metadata = []
-    # Walk through the directory
-    for root, dirs, files in os.walk(data_folder):
-        # Remove 'train' from dirs to prevent os.walk from entering it
-        dirs[:] = [d for d in dirs if d != "train"]
-        for file in files:
-            if file.endswith(('.flac')):
-                # File path and ID
-                file_path = os.path.join(root, file)
-                relative_path = file_path.replace(root_folder, "$ROOT/")
-                # Extract relevant folder names
-                parts = os.path.normpath(relative_path).split(os.sep)
+    # List all flac files
+    for file_path in sorted(
+        glob.glob(os.path.join(data_folder, "**", "*.flac"), recursive=True)
+    ):
+        relative_path = file_path.replace(root_folder, "$ROOT/")
+        # Extract relevant folder names
+        parts = os.path.normpath(relative_path).split(os.sep)
 # ['$ROOT', 'WildSVDD', 'WildSVDD_Data_Sep2024_Processed', 'test_B', 'vocals', 'bonafide_Salibi_1.flac']
-                test_set = parts[3]
-                mixture_set = parts[4]
-                file_name_with_label = parts[5]
-                if 'bonafide' in file_name_with_label:
-                    label = 'real'
-                elif 'deepfake' in file_name_with_label:
-                    label = 'fake'
-                language = test_set
-                attack = '-'
-                proportion = 'test'
-                speaker = '-'
-                # ID
-                file_id = f"{language}-{mixture_set}-{os.path.splitext(file)[0]}"
-                try:
-                    # Load metainfo with torchaudio
-                    metainfo = torchaudio.info(file_path)
-                    # Append metadata
-                    metadata.append({
-                        "ID": ID_PREFIX + file_id,
-                        "Label": label,
-                        "SampleRate": metainfo.sample_rate,
-                        "Duration": round(metainfo.num_frames / metainfo.sample_rate, 2), 
-                        "Path": relative_path,
-                        "Attack": attack,
-                        "Speaker": speaker,
-                        "Proportion": proportion,
-                        "AudioChannel": metainfo.num_channels,
-                        "AudioEncoding": metainfo.encoding,
-                        "AudioBitSample": metainfo.bits_per_sample,
-                        "Language": language,
-                    })
-                except Exception as e:
-                # Handle any exception and skip this file
-                    print(f"Error: Could not load file {file_path}. Skipping. Reason: {e}")
+        subset = parts[3]
+        if subset == 'train':
+            proportion = 'train' 
+        else:
+            proportion = 'test'
+        mixture_set = parts[4]
+        file_name_with_label = parts[5]
+        if 'bonafide' in file_name_with_label:
+            label = 'real'
+        elif 'deepfake' in file_name_with_label:
+            label = 'fake'
+        language = subset
+        attack = '-'
+        speaker = '-'
+        # ID
+        file_id = f"{language}-{mixture_set}-{os.path.splitext(parts[-1])[0]}"
+        try:
+            # Load metainfo with torchaudio
+            metainfo = torchaudio.info(file_path)
+            # Append metadata
+            metadata.append({
+                "ID": ID_PREFIX + file_id,
+                "Label": label,
+                "SampleRate": metainfo.sample_rate,
+                "Duration": round(metainfo.num_frames / metainfo.sample_rate, 2), 
+                "Path": relative_path,
+                "Attack": attack,
+                "Speaker": speaker,
+                "Proportion": proportion,
+                "AudioChannel": metainfo.num_channels,
+                "AudioEncoding": metainfo.encoding,
+                "AudioBitSample": metainfo.bits_per_sample,
+                "Language": language,
+            })
+        except Exception as e:
+        # Handle any exception and skip this file
+            print(f"Error: Could not load file {file_path}. Skipping. Reason: {e}")
     return metadata
 
 # Write metadata to CSV
