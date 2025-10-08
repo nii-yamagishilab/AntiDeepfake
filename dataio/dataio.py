@@ -79,7 +79,6 @@ def dataio_prepare(hparams):
         assert wav.dim() == 1, wav.dim()
         ### Cut very long audios into random but shorter length ###
         original_len = wav.shape[0]
-        print(original_len/int(SampleRate))
         # Threshold is 13 seconds
         if original_len > 13 * int(SampleRate):
             # Get a random but shorter length between 10s and 13s
