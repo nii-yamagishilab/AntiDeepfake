@@ -29,6 +29,10 @@ test_csv: !ref <protocol_folder>/test.csv
 # Whether use RawBoost
 use_da: True 
 
+# Remove audios that are too long or too short
+max_duration: null
+min_duration: 0.5
+
 # Replace ssl weights with the following checkpoint
 ckpt_path: !ref <ssl_weight_folder>/wav2vec_small.pt
 pretrained_weights:

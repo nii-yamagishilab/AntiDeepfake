@@ -16,8 +16,23 @@ __author__ = "Wanying Ge, Xin Wang"
 __email__ = "gewanying@nii.ac.jp, wangxin@nii.ac.jp"
 __copyright__ = "Copyright 2025, National Institute of Informatics"
 
+def filter_by_duration(dataset, min_dur=None, max_dur=None):
+    """Filter dataset by audio length.
+    """
+    # Convert [Duration] column from str to float
+    for _, value in dataset.data.items():
+        value["Duration"] = float(value["Duration"])
+    # Set a threshold for filtering
+    filtered_dataset = dataset.filtered_sorted(
+        sort_key="Duration",
+        key_min_value={"Duration": min_dur} if min_dur is not None else {},
+        key_max_value={"Duration": max_dur} if max_dur is not None else {},
+    )
+    return filtered_dataset
+
+
 def dataio_prepare(hparams):
-    """prepare train and valid dataset
+    """Prepare train and valid dataset.
     """
     data_folder = hparams["data_folder"]
     # Load datasets and replace the placeholder '$ROOT' to the actual data folder path
@@ -28,6 +43,15 @@ def dataio_prepare(hparams):
     valid_data = sb.dataio.dataset.DynamicItemDataset.from_csv(
         csv_path=hparams["valid_csv"],
         replacements={"ROOT": data_folder},
+    )
+    # Filter dataset by audio length, we only filter out very short audio by default.
+    # Model forward pass will break if input audio is shorter than a few frames,
+    # this is likely to happen during inference when padding is disabled.
+    train_data = filter_by_duration(
+        train_data, min_dur=hparams["min_duration"], max_dur=hparams["max_duration"]
+    )
+    valid_data = filter_by_duration(
+        valid_data, min_dur=hparams["min_duration"], max_dur=hparams["max_duration"]
     )
 
     # === Dataloader behaviour for TRAIN and VALID data ===
@@ -55,6 +79,7 @@ def dataio_prepare(hparams):
         assert wav.dim() == 1, wav.dim()
         ### Cut very long audios into random but shorter length ###
         original_len = wav.shape[0]
+        print(original_len/int(SampleRate))
         # Threshold is 13 seconds
         if original_len > 13 * int(SampleRate):
             # Get a random but shorter length between 10s and 13s
@@ -109,8 +134,8 @@ def dataio_prepare(hparams):
         output_keys=["id", "wav", "logit"]
     ) 
 
-    # Using DynamicBatch Sampler for training data, batch size is not fixed during training,
-    # and each mini-batch will contain audios with similar length
+    # Using DynamicBatch Sampler for training, batch size is not fixed during training,
+    # and each mini-batch will contain audios with similar length,
     # and total duration of each mini-batch will be limited to hparams["max_batch_length"]
     dynamic_hparams = hparams["dynamic_batch_sampler_train"]
     train_sampler = DynamicBatchSampler(
@@ -135,12 +160,16 @@ def dataio_prepare(hparams):
     return train_data, valid_data, train_loader_kwargs, valid_loader_kwargs
 
 def dataio_prepare_test(hparams):
-    """prepare test dataset
+    """Prepare test dataset.
     """
     data_folder = hparams["data_folder"] 
     test_data = sb.dataio.dataset.DynamicItemDataset.from_csv(
         csv_path=hparams["test_csv"],
         replacements={"ROOT": data_folder},
+    )
+    # We only filter out very short audio in testing
+    test_data = filter_by_duration(
+        test_data, min_dur=hparams["min_duration"], max_dur=None,
     )
     # === Dataloader behaviour for TEST data -- no trimming, no augmentation ===
     @sb.utils.data_pipeline.takes("Path", "Label", "SampleRate", "AudioChannel")
