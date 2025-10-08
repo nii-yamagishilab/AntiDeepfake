@@ -279,7 +279,11 @@ python main.py inference hparams/mms_300m.yaml \
     --exp_name fine_training \
     --test_csv /path/to/your/test.csv
 ```
-The script will automatically search for the best validation checkpoint in the specified experiment folder `/base_path/Log/exps/exp_mms_300m_<exp_name>`. It will generate an `evaluation_score.csv` file in the same folder.
+Notes:
+1. The script will automatically search for the best validation checkpoint in the specified experiment folder `/base_path/Log/exps/exp_mms_300m_<exp_name>`.
+2. By default, it will generate an `evaluation_score.csv` in the same exp folder.
+3. To specify a custom location to save score, use `--score_path /any/path/to/save/your_score.csv`
+4. Test audios shorter than 0.5 seconds are excluded from inference by default, because the forward pass may break if model receives very very short files. To disable this behavior, use `--min_duration null`.
 
 
 For using AntiDeepfake checkpoints without training:
