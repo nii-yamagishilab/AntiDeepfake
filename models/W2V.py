@@ -8,6 +8,9 @@ global_configs contains configurations for each model, they are used to initiali
 SSL architectures
 """
 import torch
+import torch.nn
+import torch.nn.functional as F
+
 from fairseq.models.wav2vec import Wav2Vec2Model, Wav2Vec2Config
 from models.W2V_configs import global_input_dims, global_configs
 
@@ -91,6 +94,24 @@ class Model(torch.nn.Module):
 
     def forward(self, wav):
         return self.__forward(wav)[0]
+
+
+    def forward_grpo(self, wav, rl_config):
+        """forward method for GRPO paradigm
+        """
+        # compute the prediction logits
+        pred = self.__forward(wav)[0]
+
+        # compute the probabilities
+        _prob = F.softmax(pred, dim=-1)
+
+        # sampling from the probabilies
+        with torch.no_grad():
+            y_samp = torch.multinomial(_prob, num_samples=rl_config['sample_num'], replacement=True)
+        
+        return pred, y_samp    
+
+
     
     def get_emb_dim(self):
         return self.m_ssl.out_dim

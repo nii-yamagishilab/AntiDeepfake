@@ -63,7 +63,7 @@ valid_dataloader_options:
 ####################### Training Parameters ####################################
 lr: 1e-7 
 warmup: 80000
-
+   
 ####################### Model Parameters #######################################
 ssl: !new:models.W2V.Model
    model_name: xlsr_2b

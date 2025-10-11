@@ -15,6 +15,7 @@ dist/
 downloads/
 eggs/
 projects/
+projects*
 .eggs/
 lib/
 lib64/
