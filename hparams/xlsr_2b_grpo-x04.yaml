@@ -42,7 +42,7 @@ max_grad_norm: 100.
 # The training will either stops at number_of_epochs or optimizer_step_limit
 # I.e. the first that is reached.
 optimizer_step_limit: 800000
-valid_step: 100000
+valid_step: 20000
 
 # Dynamic Batching parameters
 max_batch_length: 50 
@@ -61,7 +61,7 @@ valid_dataloader_options:
    batch_size: 10 
 
 ####################### Training Parameters ####################################
-lr: 1e-7
+lr: 1e-6
 warmup: 80000
 rl_config:
    algo: grpo3
