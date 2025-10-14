@@ -24,7 +24,6 @@ sdist/
 var/
 wheels/
 experiments/
-hparams/*.yaml
 share/python-wheels/
 *.egg-info/
 .installed.cfg
