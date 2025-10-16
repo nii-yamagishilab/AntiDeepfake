@@ -23,6 +23,7 @@
 <hr>
 
 ## 📢 News and Updates
+[Oct. 16, 2025] We corrected previous implementation of EER calculation, and updated the code, result tables in arXiv and Hugging Face. I applogize for the mistake.
 
 [Sep. 20, 2025] Add functions and a demo notebook for drift detection. Please check details [README_drift.md](./README_drift.md).
 
@@ -35,26 +36,7 @@
 
 The AntiDeepfake project provides a series of powerful foundation models post-trained for deepfake detection. The AntiDeepfake model can be used for feature extraction for deepfake detection in a zero-shot manner, or it may be further fine-tuned and optimized for a specific database or deepfake-related task.
 
-The table below summarizes the Equal Error Rate (EER) performance across multiple evaluation datasets, along with model sizes, to help guide your selection.
-
 For more technical details and analysis, please refer to our paper [Post-training for Deepfake Speech Detection](https://arxiv.org/abs/2506.21090).
-
-| 🤗 Model                                                                                 | Params | RawBoost | ADD2023 | DEEP-VOICE | FakeOrReal | FakeOrReal-Norm | In-the-Wild | Deepfake-Eval-2024 |
-|------------------------------------------------------------------------------------------|--------|----|---------|-----------|------------|--------------|----------|----------|
-| [HuBERT-XL-NDA](https://huggingface.co/nii-yamagishilab/hubert-xlarge-anti-deepfake-nda) | 964M   | ✗  | 35.34   | 14.87     | 3.67       | 15.52        | 17.99    | 47.72    |
-| [W2V-Small-NDA](https://huggingface.co/nii-yamagishilab/wav2vec-small-anti-deepfake-nda) | 95M    | ✗  | 19.41   | 16.22     | 1.05       | 6.47         | 4.65     | 31.97    |
-| [W2V-Large-NDA](https://huggingface.co/nii-yamagishilab/wav2vec-large-anti-deepfake-nda) | 317M   | ✗  | 12.67   | 5.01      | 0.80       | 1.44         | 2.25     | 30.05    |
-| [MMS-300M-NDA](https://huggingface.co/nii-yamagishilab/mms-300m-anti-deepfake-nda)       | 317M   | ✗  | 11.22   | 3.04      | 0.46       | 2.71         | 2.00     | 31.38    |
-| [MMS-1B-NDA](https://huggingface.co/nii-yamagishilab/mms-1b-anti-deepfake-nda)           | 965M   | ✗  | 9.46    | 2.27      | 0.89       | 1.10         | 1.86     | 27.55    |
-| [XLS-R-1B-NDA](https://huggingface.co/nii-yamagishilab/xls-r-1b-anti-deepfake-nda)       | 965M   | ✗  | 6.58    | 2.96      | 3.16       | 10.91        | 1.36     | 26.17    |
-| [XLS-R-2B-NDA](https://huggingface.co/nii-yamagishilab/xls-r-2b-anti-deepfake-nda)       | 2.2B   | ✗  | 6.84    | 2.63      | 1.18       | 1.73         | 1.31     | 25.78    |
-| [HuBERT-XL](https://huggingface.co/nii-yamagishilab/hubert-xlarge-anti-deepfake) | 964M   | ✓  | 18.90   | 5.67      | 2.49       | 3.17         | 5.23     | 34.08    |
-| [W2V-Small](https://huggingface.co/nii-yamagishilab/wav2vec-small-anti-deepfake) | 95M    | ✓  | 13.02   | 9.80      | 21.94      | 17.85        | 4.24     | 33.33    |
-| [W2V-Large](https://huggingface.co/nii-yamagishilab/wav2vec-large-anti-deepfake) | 317M   | ✓  | 13.25   | 4.53      | 0.63       | 0.97         | 1.91     | 33.38    |
-| [MMS-300M](https://huggingface.co/nii-yamagishilab/mms-300m-anti-deepfake)       | 317M   | ✓  | 7.93    | 2.27      | 1.35       | 5.92         | 2.90     | 32.80    |
-| [MMS-1B](https://huggingface.co/nii-yamagishilab/mms-1b-anti-deepfake)           | 965M   | ✓  | 9.06    | 2.56      | 1.22       | 1.73         | 1.82     | 27.70    |
-| [XLS-R-1B](https://huggingface.co/nii-yamagishilab/xls-r-1b-anti-deepfake)       | 965M   | ✓  | 5.39    | 2.52      | 5.74       | 12.14        | 1.35     | 26.76    |
-| [XLS-R-2B](https://huggingface.co/nii-yamagishilab/xls-r-2b-anti-deepfake)       | 2.2B   | ✓  | 4.67    | 2.30      | 2.62       | 1.65         | 1.23     | 27.77    |
 
 
 ## Table of Contents
@@ -149,8 +131,7 @@ python evaluation.py ../Log/exps/exp_mms_300m_eval_antideepfake_mms_300m_toy_exa
 #
 #        roc_auc  accuracy  precision  recall      f1     fpr     fnr     eer  eer_threshold
 #subset                                                                                     
-#all         0.9935    0.9467     0.6818  0.9375  0.7895  0.0522  0.0625  0.0597   0.259
-#ASV19LAdemo 0.9935    0.9467     0.6818  0.9375  0.7895  0.0522  0.0625  0.0597   0.259
+#Pooled   0.9935    0.9467     0.6818  0.9375  0.7895  0.0522  0.0625  0.0611         0.2111
 ```
 
 For details on inference, post-training, and fine-tuning, please check the following section.
@@ -305,13 +286,26 @@ For accuracy, precision, recall, f1, fpr and fnr, threshold of real class probab
 
         roc_auc  accuracy  precision  recall      f1     fpr     fnr     eer  eer_threshold
 subset                                                                                     
-all         0.9935    0.9467     0.6818  0.9375  0.7895  0.0522  0.0625  0.0597          0.259
-ASV19LAdemo 0.9935    0.9467     0.6818  0.9375  0.7895  0.0522  0.0625  0.0597          0.259
+Pooled        0.9935    0.9467     0.6818  0.9375  0.7895  0.0522  0.0625  0.0611         0.2111
+```
+
+The row `Pooled` show results computed over all the scores in the file. 
+If your test set contains files from multiple dataset and you want to check results of a particular subset (i.e., file IDs start with common prefix string), run:
+```
+python evaluation.py /path/to/your/evaluation_score.csv ASV19LAdemo ...  
+```
+You will get results like this:
+```
+===== METRICS SUMMARY =====
+For accuracy, precision, recall, f1, fpr and fnr, threshold of real class probablity is 0.5
+
+             roc_auc  accuracy  precision  recall      f1     fpr     fnr     eer  eer_threshold
+subset                                                                                          
+Pooled        0.9935    0.9467     0.6818  0.9375  0.7895  0.0522  0.0625  0.0611         0.2111
+ASV19LAdemo   0.9935    0.9467     0.6818  0.9375  0.7895  0.0522  0.0625  0.0611         0.2111
 ...
 ```
 
-The row `all` show results computed over all the scores in the file. 
-The rows below `all` list the results for each subset in the file, where the subset is identified by the file ID prefix (e.g., ASV19LAdemo in Usage demonstration).
 
 # Our fine-tuning results
 
