@@ -5,6 +5,9 @@ Usage:
     python evaluation.py <score.csv>
 2. and optionally, to print pooled & subset result
     python evaluation.py <score.csv> ID_PREFIX_1 ID_PREFIX_2 ...
+3. You can also specify a probability threshold for evaluation:
+    python evaluation.py <score.csv> 0.7 ID_PREFIX_1 ID_PREFIX_2 ...
+   Note that the default threshold is 0.5, i.e., real prob > fake prob
 
 The score.csv file should look like below. Each [Score] is [Fake logits, Real logits],
 and [Lable] is 0 for Groundtruth Fake and 1 for Groundtruth Real
@@ -78,7 +81,7 @@ def compute_eer(target_scores, nontarget_scores):
 # Helper Functions
 # ======================================================
 def extract_scores(score_str):
-    """Read the given [score_str] column and convert string into a list of two logits.
+    """Read the [score_str] column and convert str to a list of two float nums.
     """
     try:
         score_list = ast.literal_eval(score_str)
@@ -129,6 +132,7 @@ def parse_file(filename, subset_list=None):
 
 def softmax_score(logits):
     """This function uses softmax and return the prob of the positive class.
+    We use the predicted probability for positive class for performance evaluation.
     """
     logits_tensor = torch.tensor(logits)
     softmax_scores = F.softmax(logits_tensor, dim=1).numpy()
@@ -136,7 +140,7 @@ def softmax_score(logits):
     return score_positive
 
 
-def compute_metrics(y_true, logits, pred_threshold=0.5):
+def compute_metrics(y_true, logits, pred_threshold):
     """Compute all required metrics.
     """
     # Get the score of positive class ranged [0, 1]
@@ -173,7 +177,7 @@ def compute_metrics(y_true, logits, pred_threshold=0.5):
     }
 
 
-def main(filename, subset_list):
+def main(filename, pred_threshold, subset_list):
     # Preprocess
     data = parse_file(filename, subset_list)
     # Load scores and calculate metrics
@@ -182,7 +186,7 @@ def main(filename, subset_list):
         # Valid prefix contains at least "Pooled", and optional user-given prefix
         if subset_list is not None and key != 'Pooled' and key not in subset_list:
             continue
-
+        # If the given prefix does't match any of the found prefix
         if not data[key]['y_true']:
             print(f"No data for {key}")
             continue
@@ -190,8 +194,6 @@ def main(filename, subset_list):
         y_true = np.array(data[key]['y_true'])
         # Predictions
         logits = np.array(data[key]['logits'])
-        # We use 0.5 for metrics with fixed threshold
-        pred_threshold = 0.5
         # Compute all metrics here
         metrics = compute_metrics(y_true, logits, pred_threshold)
         metrics['subset'] = key
@@ -213,10 +215,20 @@ def main(filename, subset_list):
     
     # Format display
     print("\n===== METRICS SUMMARY =====")
-    print(f"For accuracy, precision, recall, f1, fpr and fnr, threshold of real class probablity is {pred_threshold}\n")
+    print(f"For accuracy, precision, recall, f1, fpr and fnr, threshold of real class probablity is {pred_threshold*100:.2f}%\n")
     print(df_results.round(4).to_string())
 
 if __name__ == "__main__":
     score_file = sys.argv[1]
-    subset_list = sys.argv[2:] if len(sys.argv) > 2 else None
-    main(score_file, subset_list)
+    # Default values
+    pred_threshold = 0.5
+    subset_list = None
+    # Load and replace default values if given
+    if len(sys.argv) >= 3:
+        try:
+            pred_threshold = float(sys.argv[2])
+            subset_list = sys.argv[3:] if len(sys.argv) > 3 else None
+        except ValueError:
+            # If second arg is not a float, treat it as a prefix instead
+            subset_list = sys.argv[2:]
+    main(score_file, pred_threshold, subset_list)

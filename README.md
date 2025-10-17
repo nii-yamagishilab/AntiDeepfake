@@ -282,22 +282,26 @@ python evaluation.py /path/to/your/evaluation_score.csv
 You will get results similar to this:
 ```
 ===== METRICS SUMMARY =====
-For accuracy, precision, recall, f1, fpr and fnr, threshold of real class probablity is 0.5
+For accuracy, precision, recall, f1, fpr and fnr, threshold of real class probablity is 50.00%
 
         roc_auc  accuracy  precision  recall      f1     fpr     fnr     eer  eer_threshold
 subset                                                                                     
 Pooled        0.9935    0.9467     0.6818  0.9375  0.7895  0.0522  0.0625  0.0611         0.2111
 ```
 
-The row `Pooled` show results computed over all the scores in the file. 
-If your test set contains files from multiple dataset and you want to check results of a particular subset (i.e., file IDs start with common prefix string), run:
+The row `Pooled` show results computed over all scores listed in the score file. By default, we use 0.5 as the probability threshold for evaluation. You can change this threshold by:
+```
+python evaluation.py /path/to/your/evaluation_score.csv 0.7
+```
+
+If your test set contains files from multiple dataset and you want to check results of a specific subset (i.e., file IDs start with a common prefix string), run:
 ```
 python evaluation.py /path/to/your/evaluation_score.csv ASV19LAdemo ...  
 ```
 You will get results like this:
 ```
 ===== METRICS SUMMARY =====
-For accuracy, precision, recall, f1, fpr and fnr, threshold of real class probablity is 0.5
+For accuracy, precision, recall, f1, fpr and fnr, threshold of real class probablity is 50.00%
 
              roc_auc  accuracy  precision  recall      f1     fpr     fnr     eer  eer_threshold
 subset                                                                                          
