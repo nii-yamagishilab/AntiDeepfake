@@ -70,7 +70,7 @@ def read_protocol(protocol_file):
 # Function to collect additional metadata (duration and sample rate)
 def collect_audio_metadata(metadata, root_folder):
     def __get_audio_meta(row):
-        file_path = os.path.join(data_folder, f"{row['ID']}")
+        file_path = row['ID']
         if os.path.exists(file_path):
             metainfo = torchaudio.info(file_path)
             sample_rate = metainfo.sample_rate

@@ -17,6 +17,7 @@ WaveFake.csv:
 import os
 import sys
 import csv
+import glob
 
 try:
     import pandas as pd
@@ -40,49 +41,47 @@ output_csv = dataset_name + '.csv'
 # Function to collect metadata from the directory structure
 def collect_metadata(data_folder):
     metadata = []
-    # Walk through the directory
-    for root, dirs, files in os.walk(data_folder):
+    # List all wav files
+    for file_path in sorted(
+        glob.glob(os.path.join(data_folder, "*.wav"))
         # Prevent os.walk from descending into subdirectories
-        if root.count(os.sep) - data_folder.count(os.sep) >= 1:
-            dirs[:] = []  # Clear dirs to stop further descent
-        for file in files:
-            if file.endswith((".wav")):  # Check for audio files
-                # File path and ID
-                file_path = os.path.join(root, file)
-                relative_path = file_path.replace(root_folder, "$ROOT/")
-                # Extract relevant folder names
-                parts = os.path.normpath(relative_path).split(os.sep)
-                # Treat subfolder name as attack ID
-                attack = parts[3]
-                if 'ljspeech' in attack:
-                    lang = 'EN'
-                if 'jsut' in attack:
-                    lang = 'JA'
-                label = 'fake'
-                proportion = '-'
-                file_id = os.path.splitext(file)[0]
-                try:
-                    # Load metainfo with torchaudio
-                    metainfo = torchaudio.info(file_path)
-                    # Append metadata
-                    metadata.append({
-                        # Same file_id can occur in different subfolders
-                        "ID": ID_PREFIX + attack + "_" + file_id,
-                        "Label": label,
-                        "SampleRate": metainfo.sample_rate,
-                        "Duration": round(metainfo.num_frames / metainfo.sample_rate, 2),
-                        "Path": relative_path,
-                        "Attack": attack,
-                        "Speaker": "-",
-                        "Proportion": proportion,
-                        "AudioChannel": metainfo.num_channels,
-                        "AudioEncoding": metainfo.encoding,
-                        "AudioBitSample": metainfo.bits_per_sample,
-                        "Language": lang,
-                    })
-                except Exception as e:
-                # Handle any exception and skip this file
-                    print(f"Error: Could not load file {file_path}. Skipping. Reason: {e}")
+        + glob.glob(os.path.join(data_folder, "*", "*.wav"))
+    ):
+        relative_path = file_path.replace(root_folder, "$ROOT/")
+        # Extract relevant folder names
+        parts = os.path.normpath(relative_path).split(os.sep)
+        # Treat subfolder name as attack ID
+        attack = parts[3]
+        if 'ljspeech' in attack:
+            lang = 'EN'
+        if 'jsut' in attack:
+            lang = 'JA'
+        label = 'fake'
+        proportion = '-'
+        spk = '-'
+        file_id = os.path.splitext(parts[-1])[0]
+        try:
+            # Load metainfo with torchaudio
+            metainfo = torchaudio.info(file_path)
+            # Append metadata
+            metadata.append({
+                # Same file_id can occur in different subfolders
+                "ID": ID_PREFIX + attack + "_" + file_id,
+                "Label": label,
+                "SampleRate": metainfo.sample_rate,
+                "Duration": round(metainfo.num_frames / metainfo.sample_rate, 2),
+                "Path": relative_path,
+                "Attack": attack,
+                "Speaker": spk,
+                "Proportion": proportion,
+                "AudioChannel": metainfo.num_channels,
+                "AudioEncoding": metainfo.encoding,
+                "AudioBitSample": metainfo.bits_per_sample,
+                "Language": lang,
+            })
+        except Exception as e:
+        # Handle any exception and skip this file
+            print(f"Error: Could not load file {file_path}. Skipping. Reason: {e}")
     return metadata
 
 # Write metadata to CSV
