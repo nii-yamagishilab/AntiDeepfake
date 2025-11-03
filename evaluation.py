@@ -140,7 +140,7 @@ def softmax_score(logits):
     return score_positive
 
 
-def compute_metrics(y_true, logits, pred_threshold):
+def compute_metrics(y_true, logits, pred_threshold=0.5):
     """Compute all required metrics.
     """
     # Get the score of positive class ranged [0, 1]
