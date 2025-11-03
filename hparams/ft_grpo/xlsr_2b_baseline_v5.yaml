@@ -30,8 +30,9 @@ test_csv: !ref <protocol_folder>/test.csv
 use_da: True 
 
 # Replace ssl weights with the following checkpoint
+ckpt_path: !ref <ssl_weight_folder>/xlsr2_2B_1000k.pt
 pretrained_weights:
-   detector: !ref <ssl_weight_folder>/xlsr2_2B_1000k.pt
+   detector: !ref <ckpt_path>
 
 # Training and logging
 number_of_epochs: 30
@@ -63,22 +64,10 @@ valid_dataloader_options:
 ####################### Training Parameters ####################################
 lr: 1e-6
 warmup: 80000
-rl_config:
-   algo: grpo3
-   sample_num: 64
-   std_floor: 1e-5
-   beta: 0.04
-   inner_step_size: 1000
-   epsilon: 0.2
+
 
 ####################### Model Parameters #######################################
 ssl: !new:models.W2V.Model
-   model_name: xlsr_2b
-
-ref_detector: !new:models.W2V.Model
-   model_name: xlsr_2b
-
-old_detector: !new:models.W2V.Model
    model_name: xlsr_2b
 
 modules:
