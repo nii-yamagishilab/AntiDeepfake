@@ -54,8 +54,8 @@ def load_weights(trg_state, path, func_name_change=lambda x: x):
 
         if trg_state[name].size() != loaded_state[origname].size():
             print("Wrong para. length: {:s}, model: {:s}, loaded: {:s}".format(
-                origname, trg_state[name].size(), 
-                loaded_state[origname].size()))
+                origname, str(trg_state[name].size()), 
+                str(loaded_state[origname].size())))
             continue
         trg_state[name].copy_(param)
     return

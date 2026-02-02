@@ -127,23 +127,38 @@ class SSLBrain(sb.core.Brain):
         input_data = batch["wav"].data.to(device=self.device, non_blocking=True)
 
         # mode of forward computation
-        if stage == sb.Stage.TRAIN and self.rl_algo and self.rl_algo.startswith('grpo'):
+        if stage != sb.Stage.TRAIN:
+            # for inference or validation
+            preds = self.modules.detector(input_data, inference=True)
+            
+        elif self.rl_algo and self.rl_algo.startswith('grpo'):
+            # training & using GRPO
             # grpo, where preds contains both logits and sampled labels
             logits, sa_labels = self.modules.detector.forward_grpo(input_data, self.rl_config)
-
             
             with torch.no_grad():
-                # reference model
-                logits_ref = self.ref_detector(input_data)
-
-                # old model
-                if self.old_detector is not None:
-                    logits_old = self.old_detector(input_data)
+                if 'segment_level' in self.rl_config and self.rl_config['segment_level']:
+                    # segmental level output
+                    # reference model
+                    logits_ref = self.ref_detector.forward_seg(input_data)
+                    # old model
+                    if self.old_detector is not None:
+                        logits_old = self.old_detector.forward_seg(input_data)
+                    else:
+                        logits_old = None
                 else:
-                    logits_old = None
-                
+                    # utterenace level output
+                    logits_ref = self.ref_detector(input_data)
+                    if self.old_detector is not None:
+                        logits_old = self.old_detector(input_data)
+                    else:
+                        logits_old = None
+                        
+            # return the logits
             preds = [logits, sa_labels, logits_ref, logits_old]
-        else:   
+            
+        else:
+            # training & using normal criterion
             preds = self.modules.detector(input_data)
         
         return preds
@@ -164,19 +179,35 @@ class SSLBrain(sb.core.Brain):
         """
         # ground-truth label, although it is referred to as logit in batch
         gt_labels = batch["logit"].to(device=self.device, non_blocking=True)
+
+        if stage != sb.Stage.TRAIN:
+            # loss for validation
+            loss = self.modules.detector.get_loss(preds, gt_labels)
+            ce_loss = loss.detach()
         
-        if stage == sb.Stage.TRAIN and self.rl_algo and self.rl_algo.startswith('grpo'):
-            # logits
+        elif self.rl_algo and self.rl_algo.startswith('grpo'):
+            # loss for GRPO training
             logits, sa_labels, logits_ref, logits_old = preds
+
+            # expand gt_labels to segment level if necessary
+            if 'segment_level' in self.rl_config and self.rl_config['segment_level']:
+                seg_length = logits.shape[0] // gt_labels.shape[0] - 1
+                seg_gt_labels = gt_labels.repeat_interleave(seg_length)
+                gt_labels = torch.concat([gt_labels, seg_gt_labels], dim=0)
             
             # rl policy loss
             if self.rl_algo == 'grpo3':
-                # ver3.
+                # full GRPO
                 loss = rl.grpo3_loss(logits, logits_ref, logits_old, sa_labels, gt_labels, self.rl_config)
                 
             elif self.rl_algo == 'grpo2':
-                # ver2.
+                # simplified GRPO
                 loss = rl.grpo2_loss(logits, logits_ref, sa_labels, gt_labels, self.rl_config)
+
+            elif self.rl_algo == 'grpo3_degraded':
+                # full GRPO
+                loss = rl.grpo3_degraded_ref(logits, logits_ref, logits_old, sa_labels, gt_labels, self.rl_config)
+                
             else:
                 # initial version
                 loss = rl.grpo_loss(logits, logits_ref, sa_labels, gt_labels, self.rl_config)
@@ -186,8 +217,8 @@ class SSLBrain(sb.core.Brain):
                 ce_loss = torch.nn.functional.cross_entropy(logits, gt_labels)
                 
         else:
-            # Cross-entropy loss of <predictions, ground-truth labels>
-            loss = torch.nn.functional.cross_entropy(preds, gt_labels)
+            # loss for other normal functions
+            loss = self.modules.detector.get_loss(preds, gt_labels)
             ce_loss = loss.detach()
         
         # Store scores and labels for EER calculation

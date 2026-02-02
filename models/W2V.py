@@ -13,6 +13,7 @@ import torch.nn.functional as F
 
 from fairseq.models.wav2vec import Wav2Vec2Model, Wav2Vec2Config
 from models.W2V_configs import global_input_dims, global_configs
+from models.oc_softmax import OCAngleLayer, OCSoftmaxLoss
 
 __author__ = "Wanying Ge, Xin Wang"
 __email__ = "gewanying@nii.ac.jp, wangxin@nii.ac.jp"
@@ -61,11 +62,11 @@ class Model(torch.nn.Module):
     Args:
       model_name: string, pass to global configurations to get model specific config
     """
-    def __init__(self, model_name):
+    def __init__(self, model_name, loss='softmax'):
         super(Model, self).__init__()
         # number of output class
         self.v_out_class = 2
-        
+        self.loss = loss
         ####
         # create network
         ####
@@ -74,12 +75,16 @@ class Model(torch.nn.Module):
         self.adap_pool1d = torch.nn.AdaptiveAvgPool1d(
             output_size=1
         )
-        self.proj_fc = torch.nn.Linear(
-            in_features=self.m_ssl.out_dim,
-            out_features=self.v_out_class,
-        )
 
-    def __forward(self, wav):
+        if self.loss == 'ocsoftmax':
+            self.proj_fc = OCAngleLayer(input_features=self.m_ssl.out_dim)
+        else:
+            self.proj_fc = torch.nn.Linear(
+                in_features=self.m_ssl.out_dim,
+                out_features=self.v_out_class,
+            )
+
+    def __forward(self, wav, inference=False):
         # [batch, frame, hidden_dim]
         emb = self.m_ssl.extract_feat(wav)
         # [batch, hidden_dim, frame]
@@ -89,18 +94,36 @@ class Model(torch.nn.Module):
         # [batch, hidden_dim]
         pooled_emb = pooled_emb.view(emb.size(0), -1)
         # [batch, 2]
-        pred = self.proj_fc(pooled_emb)
-        return pred, pooled_emb
+        if self.loss == 'ocsoftmax':
+            pred = self.proj_fc(pooled_emb, inference)
+        else:
+            pred = self.proj_fc(pooled_emb)
+            
+        return pred, pooled_emb, emb.transpose(1, 2)
 
-    def forward(self, wav):
-        return self.__forward(wav)[0]
+    def forward(self, wav, inference=False):
+        return self.__forward(wav, inference)[0]
 
+    def forward_seg(self, wav):
+        # 
+        pred, pooled_emb, seg_emb = self.__forward(wav)
+        
+        # segment logits
+        seg_pred = self.proj_fc(seg_emb).view(-1, self.v_out_class)
 
+        # merge with original?
+        pred = torch.concat([pred, seg_pred], dim=0)
+        return pred
+
+    
     def forward_grpo(self, wav, rl_config):
         """forward method for GRPO paradigm
         """
         # compute the prediction logits
-        pred = self.__forward(wav)[0]
+        if 'segment_level' in rl_config and rl_config['segment_level']:
+            pred = self.forward_seg(wav)
+        else:
+            pred = self.forward(wav)
 
         # compute the probabilities
         _prob = F.softmax(pred, dim=-1)
@@ -108,13 +131,22 @@ class Model(torch.nn.Module):
         # sampling from the probabilies
         with torch.no_grad():
             y_samp = torch.multinomial(_prob, num_samples=rl_config['sample_num'], replacement=True)
-        
-        return pred, y_samp    
-
-
+            
+        return pred, y_samp
     
     def get_emb_dim(self):
         return self.m_ssl.out_dim
     
     def analysis(self, wav):
-        return self.__forward(wav)
+        pred, pooled_emb, _ = self.__forward(wav, inference=True)
+        # for now, we only return the prediction and pooled_emb
+        return pred, pooled_emb
+
+
+    def get_loss(self, preds, gt_labels):
+        if self.loss == 'ocsoftmax':
+            # ocsoftmax
+            return OCSoftmaxLoss(preds, gt_labels)
+        else:
+            # cross entropy
+            return F.cross_entropy(preds, gt_labels)
