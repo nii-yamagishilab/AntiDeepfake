@@ -92,6 +92,8 @@ checkpointer: !new:speechbrain.utils.checkpoints.Checkpointer
    checkpoints_dir: !ref <save_folder>
    recoverables:
       ssl: !ref <ssl>
+      optimizer: !ref <optimizer>
+      scheduler: !ref <lr_scheduler>
 
 train_steps_logger: !new:speechbrain.utils.train_logger.TensorboardLogger
    save_dir: !ref <output_folder>/train_steps_log

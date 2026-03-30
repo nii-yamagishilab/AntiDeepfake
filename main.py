@@ -390,7 +390,7 @@ class SSLBrain(sb.core.Brain):
             )
 
             self.checkpointer.save_and_keep_only(
-                end_of_epoch=True,
+                end_of_epoch=False,
                 # Only save top-1 best models, to save storage space
                 num_to_keep=1,
                 # Best model selection is based on validation EER
