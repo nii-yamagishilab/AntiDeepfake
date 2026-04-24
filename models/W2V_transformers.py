@@ -36,6 +36,19 @@ HF_MODEL_IDS = {
     'xlsr_2b': 'facebook/wav2vec2-xls-r-2b',
 }
 
+# Per-model feature-extractor config overrides. Must stay in sync with
+# convert_to_transformers.py: the NII AntiDeepfake fairseq checkpoints use
+# feat_extract_norm="layer" + conv_bias=True, but the HF bases for
+# wav2vec2-base and wav2vec2-large default to "group" + False and need
+# explicit overrides so the built Wav2Vec2Model architecture matches the
+# converted state_dict. mms-1b-all is intentionally omitted: its HF default
+# is already "layer" + True; the separate mms_1b failure is caused by
+# adapter layers in that ASR fine-tune and is tracked separately.
+OVERRIDE_FE_CONFIG = {
+    'w2v_small': {'feat_extract_norm': 'layer', 'conv_bias': True},
+    'w2v_large': {'feat_extract_norm': 'layer', 'conv_bias': True},
+}
+
 
 class SSLModel(torch.nn.Module):
     def __init__(self, model_name):
@@ -46,6 +59,8 @@ class SSLModel(torch.nn.Module):
         super(SSLModel, self).__init__()
         hf_id = HF_MODEL_IDS[model_name]
         config = Wav2Vec2Config.from_pretrained(hf_id)
+        for k, v in OVERRIDE_FE_CONFIG.get(model_name, {}).items():
+            setattr(config, k, v)
         # Create model structure with empty weights
         self.model = Wav2Vec2Model(config)
         self.out_dim = global_input_dims[model_name]

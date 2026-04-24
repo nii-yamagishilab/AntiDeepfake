@@ -36,6 +36,37 @@ MODEL_DIMS = {
     'mms_1b': 1280, 'xlsr_1b': 1280, 'xlsr_2b': 1920,
 }
 
+# Per-model feature-extractor config overrides.
+#
+# The NII AntiDeepfake fairseq checkpoints are all trained with
+# feat_extract_norm="layer" + conv_bias=True (LayerNorm + bias on every conv
+# in the feature extractor). For two HF base models - wav2vec2-base,
+# wav2vec2-large - the default HF config uses feat_extract_norm="group" +
+# conv_bias=False, so building Wav2Vec2Model(config) from the HF default
+# yields a feature extractor that doesn't match the converted state_dict.
+# Override the config explicitly for those two models so the built
+# architecture matches the checkpoint.
+#
+# mms_1b (facebook/mms-1b-all) is NOT listed here: its HF base config is
+# already feat_extract_norm="layer" + conv_bias=True. The separate
+# load_state_dict failure reported on #14 for mms_1b is caused by the
+# adapter layers present in mms-1b-all (it is an ASR fine-tune, not the
+# pure SSL backbone), and needs a different fix than this feature-extractor
+# override. Tracking that separately.
+OVERRIDE_FE_CONFIG = {
+    'w2v_small': {'feat_extract_norm': 'layer', 'conv_bias': True},
+    'w2v_large': {'feat_extract_norm': 'layer', 'conv_bias': True},
+}
+
+
+def build_config(model_name):
+    """Load the HF base config, then apply per-model overrides."""
+    config = Wav2Vec2Config.from_pretrained(HF_MODEL_IDS[model_name])
+    for k, v in OVERRIDE_FE_CONFIG.get(model_name, {}).items():
+        setattr(config, k, v)
+    return config
+
+
 MODEL_LAYERS = {
     'w2v_small': 12, 'w2v_large': 24, 'mms_300m': 24,
     'mms_1b': 48, 'xlsr_1b': 48, 'xlsr_2b': 48,
@@ -131,7 +162,10 @@ def convert_checkpoint(model_name, src_state_dict, output_dir):
 
     hf_id = HF_MODEL_IDS[model_name]
     print(f"  Loading config from {hf_id}...")
-    config = Wav2Vec2Config.from_pretrained(hf_id)
+    config = build_config(model_name)
+    overrides = OVERRIDE_FE_CONFIG.get(model_name, {})
+    if overrides:
+        print(f"  Applied config overrides: {overrides}")
     model = Wav2Vec2Model(config)
 
     missing, unexpected = model.load_state_dict(new_state, strict=False)
