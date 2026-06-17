@@ -29,10 +29,9 @@ test_csv: !ref <protocol_folder>/test.csv
 # Whether use RawBoost
 use_da: True 
 
-# Replace ssl weights with the following checkpoint
-ckpt_path: !ref <ssl_weight_folder>/xlsr2_2B_1000k.pt
+# Replace weights with the following checkpoint
 pretrained_weights:
-   detector: !ref <ckpt_path>
+   detector: !PLACEHOLDER
 
 # Training and logging
 number_of_epochs: 30
@@ -64,13 +63,13 @@ valid_dataloader_options:
 ####################### Training Parameters ####################################
 lr: 1e-7 
 warmup: 80000
-   
+
 ####################### Model Parameters #######################################
-ssl: !new:models.W2V.Model
-   model_name: xlsr_2b
+aasist: !new:models.AASIST.Model
+   config_name: default
 
 modules:
-   detector: !ref <ssl>
+   detector: !ref <aasist>
 
 optimizer: !name:torch.optim.AdamW
    lr: !ref <lr>
@@ -91,9 +90,7 @@ lr_scheduler: !new:speechbrain.nnet.schedulers.WarmAndExpDecayLRSchedule
 checkpointer: !new:speechbrain.utils.checkpoints.Checkpointer
    checkpoints_dir: !ref <save_folder>
    recoverables:
-      ssl: !ref <ssl>
-      optimizer: !ref <optimizer>
-      scheduler: !ref <lr_scheduler>
+      aasist: !ref <aasist>
 
 train_steps_logger: !new:speechbrain.utils.train_logger.TensorboardLogger
    save_dir: !ref <output_folder>/train_steps_log

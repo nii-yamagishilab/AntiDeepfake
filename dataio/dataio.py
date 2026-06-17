@@ -112,19 +112,29 @@ def dataio_prepare(hparams):
     # Using DynamicBatch Sampler for training data, batch size is not fixed during training,
     # and each mini-batch will contain audios with similar length
     # and total duration of each mini-batch will be limited to hparams["max_batch_length"]
-    dynamic_hparams = hparams["dynamic_batch_sampler_train"]
-    train_sampler = DynamicBatchSampler(
-        train_data,
-        length_func=lambda x: float(x["Duration"]),
-        **dynamic_hparams,
-    )
-    train_loader_kwargs = {
-        "batch_sampler": train_sampler,
-        # Pad zeros to shorter audio waveform, to form a fixed length mini-batch
-        "collate_fn": PaddedBatch,
-        "num_workers": hparams["num_workers"],
-        "pin_memory": True,
-    }
+    if 'dynamic_batch_sampler_train' in hparams:
+        dynamic_hparams = hparams["dynamic_batch_sampler_train"]
+        train_sampler = DynamicBatchSampler(
+            train_data,
+            length_func=lambda x: float(x["Duration"]),
+            **dynamic_hparams,
+        )
+        train_loader_kwargs = {
+            "batch_sampler": train_sampler,
+            # Pad zeros to shorter audio waveform, to form a fixed length mini-batch
+            "collate_fn": PaddedBatch,
+            "num_workers": hparams["num_workers"],
+            "pin_memory": True,
+        }
+    else:
+        train_loader_kwargs = {
+            "batch_size": hparams["max_batch_length"],
+            # Pad zeros to shorter audio waveform, to form a fixed length mini-batch 
+            "collate_fn": PaddedBatch,
+	    "num_workers": hparams["num_workers"],
+	    "pin_memory": True,
+        }
+
     valid_loader_kwargs = {
         "batch_size": hparams["valid_dataloader_options"]["batch_size"],
         "collate_fn": PaddedBatch,

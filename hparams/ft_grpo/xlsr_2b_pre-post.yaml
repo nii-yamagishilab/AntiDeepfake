@@ -30,7 +30,7 @@ test_csv: !ref <protocol_folder>/test.csv
 use_da: True 
 
 # Replace ssl weights with the following checkpoint
-ckpt_path: !ref <ssl_weight_folder>/xlsr2_2B_1000k.pt
+ckpt_path: !ref <ssl_weight_folder>/xlsr_2b_1000k.pt
 pretrained_weights:
    detector: !ref <ckpt_path>
 
@@ -46,7 +46,7 @@ optimizer_step_limit: 800000
 valid_step: 100000
 
 # Dynamic Batching parameters
-max_batch_length: 50 
+max_batch_length: 100 
 num_buckets: 20 
 shuffle: True # if true re-creates batches at each epoch shuffling examples.
 batch_ordering: random
@@ -64,7 +64,11 @@ valid_dataloader_options:
 ####################### Training Parameters ####################################
 lr: 1e-7 
 warmup: 80000
-   
+rl_config:
+   algo: null
+   sample_num: 64
+   std_floor: 1e-5
+
 ####################### Model Parameters #######################################
 ssl: !new:models.W2V.Model
    model_name: xlsr_2b
@@ -92,8 +96,6 @@ checkpointer: !new:speechbrain.utils.checkpoints.Checkpointer
    checkpoints_dir: !ref <save_folder>
    recoverables:
       ssl: !ref <ssl>
-      optimizer: !ref <optimizer>
-      scheduler: !ref <lr_scheduler>
 
 train_steps_logger: !new:speechbrain.utils.train_logger.TensorboardLogger
    save_dir: !ref <output_folder>/train_steps_log

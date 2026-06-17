@@ -2,6 +2,7 @@
 """
 import os
 import sys
+import copy
 import time
 import random
 from pathlib import Path
@@ -22,6 +23,7 @@ from speechbrain.dataio.dataloader import LoopedLoader
 from dataio.dataio import dataio_prepare, dataio_prepare_test
 from utils import load_weights, set_random_seed, pickle_dump
 from evaluation import compute_metrics
+from algo import rl
 
 __author__ = "Wanying Ge, Xin Wang"
 __email__ = "gewanying@nii.ac.jp, wangxin@nii.ac.jp"
@@ -38,6 +40,48 @@ class SSLBrain(sb.core.Brain):
         # load pre-trained weights
         # see comment in the function
         self._init_model()
+
+        ####
+        # type of optimization
+        #  add support to RL-based training
+        ### 
+        if hasattr(self.hparams, 'rl_config') and self.hparams.rl_config != None:
+            self.rl_algo = self.hparams.rl_config['algo']
+            self.rl_config = self.hparams.rl_config
+
+            # copy and create a reference model during initialization
+            if hasattr(self.hparams, 'ref_detector'):
+                self.ref_detector = self.hparams.ref_detector
+                self.ref_detector.load_state_dict(self.modules.detector.state_dict())
+                self.ref_detector.to(self.device)
+                self.ref_detector.eval()
+            else:
+                self.ref_detector = None
+                
+            # initialzie old policy if necessary
+            if hasattr(self.hparams, 'old_detector'):
+                self.old_detector = self.hparams.old_detector
+                # load at the beginning of of K steps
+                self.old_detector.load_state_dict(self.modules.detector.state_dict())
+                self.old_detector.to(self.device)
+                self.old_detector.eval()
+
+                if 'inner_step_size' in self.hparams.rl_config:
+                    self.old_detector_update_steps = self.hparams.rl_config['inner_step_size']
+                else:
+                    self.old_detector_update_steps = 1000
+            else:
+                self.old_detector = None
+                self.old_detector_update_steps = 1
+                
+            if self.rl_algo is None:
+                self.rl_config = None
+                
+        else:
+            self.rl_algo = None
+            self.rl_config = None
+            self.old_detector = None
+            self.ref_detector = None
         
         return
 
@@ -75,14 +119,48 @@ class SSLBrain(sb.core.Brain):
                 if not pretrained_path.exists():
                     logger.error("Not find {:s}".format(str(pretrained_path)))
                     sys.exit(1)
-
         return
 
     def compute_forward(self, batch, stage):
         """Compute forward pass, get called during training, validation, and testing.
         """
         input_data = batch["wav"].data.to(device=self.device, non_blocking=True)
-        preds = self.modules.detector(input_data)
+
+        # mode of forward computation
+        if stage != sb.Stage.TRAIN:
+            # for inference or validation
+            preds = self.modules.detector(input_data, inference=True)
+            
+        elif self.rl_algo and self.rl_algo.startswith('grpo'):
+            # training & using GRPO
+            # grpo, where preds contains both logits and sampled labels
+            logits, sa_labels = self.modules.detector.forward_grpo(input_data, self.rl_config)
+            
+            with torch.no_grad():
+                if 'segment_level' in self.rl_config and self.rl_config['segment_level']:
+                    # segmental level output
+                    # reference model
+                    logits_ref = self.ref_detector.forward_seg(input_data)
+                    # old model
+                    if self.old_detector is not None:
+                        logits_old = self.old_detector.forward_seg(input_data)
+                    else:
+                        logits_old = None
+                else:
+                    # utterenace level output
+                    logits_ref = self.ref_detector(input_data)
+                    if self.old_detector is not None:
+                        logits_old = self.old_detector(input_data)
+                    else:
+                        logits_old = None
+                        
+            # return the logits
+            preds = [logits, sa_labels, logits_ref, logits_old]
+            
+        else:
+            # training & using normal criterion
+            preds = self.modules.detector(input_data)
+        
         return preds
 
     def compute_analysis(self, batch, stage):
@@ -99,22 +177,64 @@ class SSLBrain(sb.core.Brain):
     def compute_objectives(self, preds, batch, stage):
         """Compute losses, get called during training and validation.
         """
-        # ground-truth label
-        logit = batch["logit"].to(device=self.device, non_blocking=True)
-        # Cross-entropy loss of <predictions, ground-truth labels>
-        loss = torch.nn.functional.cross_entropy(preds, logit)
+        # ground-truth label, although it is referred to as logit in batch
+        gt_labels = batch["logit"].to(device=self.device, non_blocking=True)
+
+        if stage != sb.Stage.TRAIN:
+            # loss for validation
+            loss = self.modules.detector.get_loss(preds, gt_labels)
+            ce_loss = loss.detach()
+        
+        elif self.rl_algo and self.rl_algo.startswith('grpo'):
+            # loss for GRPO training
+            logits, sa_labels, logits_ref, logits_old = preds
+
+            # expand gt_labels to segment level if necessary
+            if 'segment_level' in self.rl_config and self.rl_config['segment_level']:
+                seg_length = logits.shape[0] // gt_labels.shape[0] - 1
+                seg_gt_labels = gt_labels.repeat_interleave(seg_length)
+                gt_labels = torch.concat([gt_labels, seg_gt_labels], dim=0)
+            
+            # rl policy loss
+            if self.rl_algo == 'grpo3':
+                # full GRPO
+                loss = rl.grpo3_loss(logits, logits_ref, logits_old, sa_labels, gt_labels, self.rl_config)
+                
+            elif self.rl_algo == 'grpo2':
+                # simplified GRPO
+                loss = rl.grpo2_loss(logits, logits_ref, sa_labels, gt_labels, self.rl_config)
+
+            elif self.rl_algo == 'grpo3_degraded':
+                # full GRPO
+                loss = rl.grpo3_degraded_ref(logits, logits_ref, logits_old, sa_labels, gt_labels, self.rl_config)
+                
+            else:
+                # initial version
+                loss = rl.grpo_loss(logits, logits_ref, sa_labels, gt_labels, self.rl_config)
+            
+            # normal cross entropy loss
+            with torch.no_grad():
+                ce_loss = torch.nn.functional.cross_entropy(logits, gt_labels)
+                
+        else:
+            # loss for other normal functions
+            loss = self.modules.detector.get_loss(preds, gt_labels)
+            ce_loss = loss.detach()
+        
         # Store scores and labels for EER calculation
         if stage != sb.Stage.TRAIN:
             self.error_metrics.append(
                 ids=batch["id"],
                 scores=preds[:, 1],
-                labels=logit,
+                labels=gt_labels,
             )
         
         objectives = {
-            "loss": loss,
+            "total_loss": (loss.detach() + ce_loss) / 2,
+            "backprop_loss": loss,
+            "ce_loss": ce_loss
         }
-        objectives["backprop_loss"] = loss
+        #objectives["backprop_loss"] = loss
         return objectives
 
     def fit(
@@ -234,6 +354,12 @@ class SSLBrain(sb.core.Brain):
                         self.profiler.stop()
                         quit()
 
+                ## customize the code to updaet the old policy
+                if self.old_detector is not None and self.step % self.old_detector_update_steps == 0:
+                    # load the latest
+                    self.old_detector.load_state_dict(self.modules.detector.state_dict())
+                    
+                ## customize the code to do validation every N steps
                 # If global step reaches to a certain number
                 if self.step % valid_step == 0:
                     # Perform intra-epoch validation
@@ -246,7 +372,7 @@ class SSLBrain(sb.core.Brain):
                         self._save_intra_epoch_ckpt()
                         last_ckpt_time = time.time()
                         steps_since_ckpt = 0
-                
+                        
         # Run train "on_stage_end" on all processes
         self.zero_grad(set_to_none=True)  # flush gradients
         self.on_stage_end(sb.Stage.TRAIN, self.avg_train_loss, epoch)
@@ -292,7 +418,7 @@ class SSLBrain(sb.core.Brain):
                  objectives["backprop_loss"]/ self.grad_accumulation_factor
             ).backward()
             
-            objectives["total_loss"] = objectives["backprop_loss"].detach()
+            #objectives["total_loss"] = objectives["backprop_loss"].detach()
 
         if should_step:
             self.optimizers_step()
