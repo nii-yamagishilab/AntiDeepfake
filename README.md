@@ -23,6 +23,8 @@
 <hr>
 
 ## 📢 News and Updates
+[July 9, 2026] We added codes and scripts for our [GRPO paper](https://arxiv.org/abs/2603.02914), please check details [README_grpo.md](./README_grpo.md).
+
 [Oct. 16, 2025] We corrected previous implementation of EER calculation, and updated the code, result tables in arXiv and Hugging Face. I applogize for the mistake.
 
 [Sep. 20, 2025] Add functions and a demo notebook for drift detection. Please check details [README_drift.md](./README_drift.md).
