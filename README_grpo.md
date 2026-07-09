@@ -24,16 +24,16 @@ The GRPO losses are implemented in `algo/rl.py`. For each input utterance, the m
 
 ### Configurations
 
-Configuration files in `hparams/ft_grpo` are named `<model>_<method>_<run>.yaml`, where `<model>` is one of the post-trained models (`mms_300m`, `mms_1b`, `w2v_small`, `w2v_large`, `xlsr_1b`, `xlsr_2b`):
+Configuration files in `hparams/ft_grpo` are named `<model>_<method>.yaml`, where `<model>` is one of the post-trained models (`mms_300m`, `mms_1b`, `w2v_small`, `w2v_large`, `xlsr_1b`, `xlsr_2b`):
 
 | Configuration | `rl_config: algo` | Method in the paper | Description |
 |---------------|-------------------|---------------------|-------------|
-| `<model>_pre-post-grpo_v1_<run>.yaml` | `grpo3` | GRPO | GRPO with clipped policy ratio (`epsilon: 0.2`) between the current and the old policy model. The old policy model is refreshed every `inner_step_size` optimizer steps. Loss function: `grpo3_loss` |
-| `<model>_pre-post-grpo_v2_<run>.yaml` | `grpo2` | GRPO<sub>s</sub> | Simplified GRPO without the clipped policy ratio and the old policy model, which updates the model after every batch of sampled data. Loss function: `grpo2_loss` |
-| `<model>_pre-post-sft_<run>.yaml` | (none) | SFT | SFT baseline using the standard cross-entropy loss |
+| `<model>_pre-post-grpo_v1.yaml` | `grpo3` | GRPO | GRPO with clipped policy ratio (`epsilon: 0.2`) between the current and the old policy model. The old policy model is refreshed every `inner_step_size` optimizer steps. Loss function: `grpo3_loss` |
+| `<model>_pre-post-grpo_v2.yaml` | `grpo2` | GRPO<sub>s</sub> | Simplified GRPO without the clipped policy ratio and the old policy model, which updates the model after every batch of sampled data. Loss function: `grpo2_loss` |
+| `<model>_pre-post-sft.yaml` | (none) | SFT | SFT baseline using the standard cross-entropy loss |
 | `<model>_pre-post.yaml` | `null` | - | For inference using the post-trained checkpoint without any fine-tuning |
 
-The `<run>` index goes from 1 to 3. YAML files of the same configuration but different `<run>` are identical -- they are provided to launch three independent fine-tuning runs for each configuration.
+In the paper, each configuration was fine-tuned three times independently. The runs share the same configuration file -- please use a different `<outputfolder>` for each run.
 
 Key hyper-parameters in `rl_config`:
 * `sample_num: 64`: number of labels sampled per utterance (i.e., the group size)
@@ -47,7 +47,7 @@ In the paper experiments, we used the segmented Deepfake-Eval-2024 train set for
 
 To fine-tune a post-trained AntiDeepfake checkpoint (e.g., MMS-300M) with GRPO:
 ```bash
-python main.py hparams/ft_grpo/mms_300m_pre-post-grpo_v1_1.yaml \
+python main.py hparams/ft_grpo/mms_300m_pre-post-grpo_v1.yaml \
     --base_path <basepath> \
     --data_folder <datafolder> \
     --output_folder <outputfolder> \
@@ -56,13 +56,13 @@ python main.py hparams/ft_grpo/mms_300m_pre-post-grpo_v1_1.yaml \
     --valid_csv <valid_protocol>
 ```
 
-To run the GRPO variant without the clipped policy ratio, or the SFT baseline, simply switch the configuration file to `mms_300m_pre-post-grpo_v2_1.yaml` or `mms_300m_pre-post-sft_1.yaml`.
+To run the GRPO variant without the clipped policy ratio, or the SFT baseline, simply switch the configuration file to `mms_300m_pre-post-grpo_v2.yaml` or `mms_300m_pre-post-sft.yaml`.
 
 ### Inference and evaluation
 
 After fine-tuning, run inference on a test set using the same configuration file and `<outputfolder>`:
 ```bash
-python main.py inference hparams/ft_grpo/mms_300m_pre-post-grpo_v1_1.yaml \
+python main.py inference hparams/ft_grpo/mms_300m_pre-post-grpo_v1.yaml \
     --base_path <basepath> \
     --data_folder <datafolder> \
     --output_folder <outputfolder> \
