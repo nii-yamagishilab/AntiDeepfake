@@ -24,6 +24,7 @@ from dataio.dataio import dataio_prepare, dataio_prepare_test
 from utils import load_weights, set_random_seed, pickle_dump
 from evaluation import compute_metrics
 from algo import rl
+from utils_wandb import parse_wandb_arguments, track_run, wandb_session
 
 __author__ = "Wanying Ge, Xin Wang"
 __email__ = "gewanying@nii.ac.jp, wangxin@nii.ac.jp"
@@ -292,7 +293,6 @@ class SSLBrain(sb.core.Brain):
                 enable=enable,
                 valid_step=self.hparams.valid_step,
             )
-
         # original validation API, gets called after the last training epoch
         self._fit_valid(valid_set=valid_set, epoch=epoch, enable=enable)
 
@@ -399,6 +399,7 @@ class SSLBrain(sb.core.Brain):
             self.step = 0
             self.on_stage_end(sb.Stage.VALID, avg_valid_loss, epoch)
         self.modules.train()
+        
         return
     
     def fit_batch(self, batch):
@@ -523,6 +524,8 @@ class SSLBrain(sb.core.Brain):
                 meta={"EqualErrorRate": stage_stats["eer"]},
                 min_keys=["EqualErrorRate"],
             )
+            if getattr(self, "run_tracker", None) is not None:
+                self.run_tracker.checkpoint(self.checkpointer)
 
     def evaluate(self, dataset, min_key, loader_kwargs={}):
         """Perform evaluation and write down CSV score file, get called in main().
@@ -558,6 +561,8 @@ class SSLBrain(sb.core.Brain):
             # Write the final score
             if sb.utils.distributed.if_main_process():
                 df_score.to_csv(self.hparams.score_path, index=False)
+                if getattr(self, "run_tracker", None) is not None:
+                    self.run_tracker.save_file(self.hparams.score_path)
                 logger.info("Scores saved to {}".format(self.hparams.score_path))
 
             # Calculate EER and print
@@ -633,21 +638,23 @@ class SSLBrain(sb.core.Brain):
         return
 
 
-def main():
+@wandb_session
+def main(wandb_context):
     ######
     # initialization
     ######
 
-    arg1 = sys.argv[1]
+    options, arguments = parse_wandb_arguments(sys.argv[1:])
+    arg1 = arguments[0]
     # switching mode
     if arg1 == "inference" or arg1 == 'analysis':
         # inference mode
         working_mode = arg1
-        hparams_file, run_opts, overrides = sb.parse_arguments(sys.argv[2:])
+        hparams_file, run_opts, overrides = sb.parse_arguments(arguments[1:])
     else:
         # training mode
         working_mode = 'training'
-        hparams_file, run_opts, overrides = sb.parse_arguments(sys.argv[1:])
+        hparams_file, run_opts, overrides = sb.parse_arguments(arguments)
     print(f"----- {working_mode} start -----\n")
 
     run_opts["find_unused_parameters"] = True
@@ -664,6 +671,10 @@ def main():
     # Update precision to bf16 if the device is CPU and precision is fp16
     if run_opts.get("device") == "cpu" and hparams.get("precision") == "fp16":
         hparams["precision"] = "bf16"
+
+    tracker = wandb_context.enter_context(
+        track_run(options, hparams, hparams_file, overrides, run_opts, working_mode)
+    )
 
     ######
     # main functions
@@ -695,6 +706,8 @@ def main():
             run_opts=run_opts,
             checkpointer=hparams["checkpointer"],
         )
+
+        brain.run_tracker = tracker
 
         ######
         # trainig start
@@ -728,6 +741,7 @@ def main():
         ######
         # load best validation model and run inference
         ######
+        brain.run_tracker = tracker
         brain.evaluate(test_data, min_key="EqualErrorRate")
 
     elif working_mode == 'analysis':
