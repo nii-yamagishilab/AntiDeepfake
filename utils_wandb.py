@@ -1,4 +1,4 @@
-"""Optional W&B tracking helpers for main_try.py (disabled by default)."""
+"""Optional W&B tracking helpers for main.py (disabled by default)."""
 import argparse
 import contextlib
 import functools
@@ -192,7 +192,7 @@ def track_run(options, hparams, hparams_file, overrides, run_opts, working_mode)
                 files = {output / "output.log", config_path,
                          output / "hyperparams.yaml", output / "log.txt",
                          Path(hparams_file).resolve(), Path(__file__).resolve(),
-                         Path(__file__).with_name("main_try.py").resolve()}
+                         Path(__file__).with_name("main.py").resolve()}
                 for key in ("train_steps_log", "train_stage_log"):
                     if hparams.get(key):
                         files.add(Path(hparams[key]).resolve())

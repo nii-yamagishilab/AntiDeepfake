@@ -1,14 +1,14 @@
 # Training with Weights & Biases
 
-`main_try.py` is a separate version of `main.py`; the original entry point and
-YAML files are unchanged. Tracking helpers live in `utils_wandb.py`.
+`main.py` supports optional W&B tracking; the YAML files are unchanged.
+Tracking helpers live in `utils_wandb.py`.
 W&B is disabled by default: explicitly pass `--wandb-mode online` or
 `--wandb-mode offline` to enable it. Install W&B in the existing training environment:
 
 ```bash
 pip install wandb
 wandb login
-python main_try.py hparams/w2v_small.yaml \
+python main.py hparams/w2v_small.yaml \
   --base_path /path/to/experiment \
   --wandb-mode online \
   --wandb-project AntiDeepfake \
@@ -39,7 +39,7 @@ Saved information:
   are pruned; large models can use substantial upload bandwidth and storage.
 - Logs: console output from the tracked execution is appended to
   `<output_folder>/output.log`. This file, existing text training logs, configuration
-  files, `main_try.py`, and `utils_wandb.py` are uploaded when execution ends, including on ordinary
+  files, `main.py`, and `utils_wandb.py` are uploaded when execution ends, including on ordinary
   Python exceptions. A forced kill cannot execute final uploads. Existing
   TensorBoard logging continues locally.
 
@@ -51,7 +51,7 @@ resumption. To restore a downloaded artifact, place its complete contents in a
 For a cluster without internet access:
 
 ```bash
-python main_try.py hparams/w2v_small.yaml \
+python main.py hparams/w2v_small.yaml \
   --base_path /path/to/experiment --wandb-mode offline
 # Later, from a machine with access to the saved run and internet:
 wandb sync /path/to/output_folder/wandb/offline-run-*
